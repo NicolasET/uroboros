@@ -106,4 +106,4 @@ Do not commit anything. The point is that the user can read this report and the 
 
 - If a phase skill errors, stop the loop, record the failure point in `loop-state.md`, report where it failed and why, and leave the artifacts as-is.
 - If the verification gate cannot pass after 3 rounds, stop, record it, and hand the failing output to the user — do not paper over a red gate.
-- If context is running low mid-pipeline, finish the current phase cleanly, write state to `loop-state.md`, and tell the user to re-run `/uroboros` — the Phase −1 resume check will pick up from the recorded phase instead of restarting.
+- If context is running low mid-pipeline, finish the current phase cleanly, write state to `loop-state.md`, and tell the user to re-run `/uroboros:run` — the Phase −1 resume check will pick up from the recorded phase instead of restarting.

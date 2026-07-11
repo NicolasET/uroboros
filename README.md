@@ -21,7 +21,7 @@ Coding agents are optimized to keep moving: they make "informed guesses," accept
 
 | Component | Role |
 |---|---|
-| `/uroboros` (command) | **Agent A — orchestrator.** Intake → branch → all six phases → final Loop Report. The only agent that talks to you, edits artifacts, and advances. |
+| `/uroboros:run` (command) | **Agent A — orchestrator.** Intake → branch → all six phases → final Loop Report. The only agent that talks to you, edits artifacts, and advances. |
 | `uroboros-reviewer` (subagent) | **Agent B — checker.** Fresh context, read-only. Interrogates each phase artifact per a phase profile; returns structured findings; `CLEAN` requires evidence. |
 | `uroboros-implementer` (subagent) | **Agent C — maker.** Fresh context, write-capable, used only in implement. Runs on a **model + effort you choose at runtime** (the orchestrator asks right before implement). Reports ambiguities instead of guessing. |
 
@@ -45,7 +45,7 @@ Restart Claude Code after installing (subagents load at startup).
 Start a feature from a raw idea (any language — the pipeline's internal artifacts are English; questions come to you in your language):
 
 ```
-/uroboros I want sellers to be able to pause a listing without losing its ranking...
+/uroboros:run I want sellers to be able to pause a listing without losing its ranking...
 ```
 
 The flow you'll experience:
@@ -55,7 +55,7 @@ The flow you'll experience:
 3. **Implement.** You're asked which model and reasoning effort the implementer should use for this run. The implementer writes the code; the orchestrator runs your real verification suite as a hard gate; the reviewer audits the diff; fixes are re-dispatched to the implementer. Red gate = not done, period.
 4. **Loop Report.** A legible delta: per phase, what changed and why; the full decision log; the gate results; everything left **uncommitted** for you to review and commit.
 
-Interrupted? Run `/uroboros` with no arguments — the resume check picks up from the last incomplete phase recorded in `loop-state.md`.
+Interrupted? Run `/uroboros:run` with no arguments — the resume check picks up from the last incomplete phase recorded in `loop-state.md`.
 
 ## Configuration
 
