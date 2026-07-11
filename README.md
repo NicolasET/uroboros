@@ -22,7 +22,7 @@ Coding agents are optimized to keep moving: they make "informed guesses," accept
 | Component | Role |
 |---|---|
 | `/uroboros:run` (command) | **Agent A — orchestrator.** Intake → branch → all six phases → final Loop Report. The only agent that talks to you, edits artifacts, and advances. |
-| `uroboros-reviewer` (subagent) | **Agent B — checker.** Fresh context, read-only. Interrogates each phase artifact per a phase profile; returns structured findings; `CLEAN` requires evidence. |
+| `uroboros-reviewer` (subagent) | **Agent B — checker.** Fresh context, read-only. Interrogates each phase artifact per a phase profile; returns structured findings; `CLEAN` requires evidence. Runs on a **model + effort you choose once per run** at intake. |
 | `uroboros-implementer` (subagent) | **Agent C — maker.** Fresh context, write-capable, used only in implement. Runs on a **model + effort you choose at runtime** (the orchestrator asks right before implement). Reports ambiguities instead of guessing. |
 
 ## Prerequisites
@@ -59,7 +59,7 @@ Interrupted? Run `/uroboros:run` with no arguments — the resume check picks up
 
 ## Configuration
 
-- **Reviewer model/effort:** edit the frontmatter of `agents/uroboros-reviewer.md` (`model:` / `effort:`). It is the single source of truth; the orchestrator passes it explicitly on dispatch. Default: `claude-opus-4-8` at `effort: max` — the reviewer is the quality gate, so it ships strong. Downgrade effort before downgrading the model if cost bites.
+- **Reviewer model/effort:** chosen at runtime, once per run, via a blocking question at intake — it governs every reviewer dispatch of that run. The frontmatter values in `agents/uroboros-reviewer.md` are only a fallback. The reviewer is the quality gate: pick strong, and downgrade effort before downgrading the model if cost bites.
 - **Implementer model/effort:** chosen at runtime, every run, via the blocking question. The frontmatter values are only a fallback.
 - **Commit policy:** Uroboros never commits. All changes are left for you, by design.
 - **`loop-state.md`:** lives in the feature directory next to `spec.md`. Keep it as run history, or gitignore `**/loop-state.md`.

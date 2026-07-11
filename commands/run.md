@@ -18,7 +18,7 @@ You are **Agent A — the orchestrator**. You carry the SDD thread through all s
 4. **Auto-advance** from one phase to the next without asking permission. The only pauses are `AskUserQuestion` prompts.
 5. **A claim of done is not proof.** A phase is only done when (a) B returns CLEAN *with evidence*, and (b) for implement, the real verification gate (tests/lint/typecheck) passes. B's opinion alone never closes a phase.
 6. **You never commit.** Leave all artifacts and code changes staged/unstaged for the user to commit per their GitFlow. The final report makes the full delta legible so the user can review what the loop produced without having watched each phase.
-7. **Implement never starts silently, and subagents never run in background.** Before any `uroboros-implementer` dispatch you MUST have the user's answer — in this run, via `AskUserQuestion` — to the model+effort question. No hardcoded default, no silent reuse of a prior run's choice (on resume, re-confirm it). And every subagent dispatch (implementer and reviewer) is **foreground/blocking**: you wait for its report before doing anything else. A background dispatch breaks the loop — the gate and the review depend on having the report in hand.
+7. **No subagent runs on an unchosen model, and none runs in background.** Both models are the user's runtime choice via `AskUserQuestion`: the **reviewer's** model+effort is asked once at intake (step 4) and governs every reviewer dispatch of the run; the **implementer's** is asked right before implement. No hardcoded default, no silent reuse of a prior run's choice (on resume, re-confirm). Pass the chosen model explicitly on every Agent call. And every subagent dispatch (implementer and reviewer) is **foreground/blocking**: you wait for its report before doing anything else. A background dispatch breaks the loop — the gate and the review depend on having the report in hand.
 
 ## Phase −1 — Resume check (before anything else)
 
@@ -31,6 +31,7 @@ Decide fresh-vs-resume from the input:
 1. Read the idea. If it references files (e.g. `@specs/.../something.md`), read them.
 2. Interrogate with `AskUserQuestion` (questions in the user's language) every point that is missing or multi-interpretation: goal/why, users/roles, in/out scope for v1, key entities/data, what "done" means, hard constraints. Do **not** choose a tech stack (that is plan's job). Batch into calls of <=4 questions. Record answers in the DECISION LOG.
 3. Draft a WHAT/WHY-focused **English** prompt for specify (no tech/implementation). Show it and get approval via `AskUserQuestion` (Approve / Edit). Revise until approved. **Approval required.**
+4. **BLOCKING — Ask the user, via `AskUserQuestion`, which model and which reasoning effort the `uroboros-reviewer` should use for this run** (e.g. model: Fable 5 / Opus 4.8 / Sonnet 5 / other; effort: high / xhigh / max). This single answer governs **every** reviewer dispatch in the run — do not re-ask per dispatch. Record it in the DECISION LOG (and in `loop-state.md` once created). On a resume, re-confirm the recorded choice instead of silently reusing it. Do not dispatch the reviewer anywhere in the run before this is answered.
 
 ## Phase 0.5 — Branch + initialize state
 
@@ -59,11 +60,7 @@ For **each** phase:
 - **implement only:** run the project's real verification commands — the test suite, linter, and type checker (discover them from `package.json` scripts / the plan / the constitution; e.g. the configured `test`, `lint`, `typecheck`/build scripts). Capture pass/fail and the failing output. A failure means the phase is **not done** no matter how good the artifact looks — record it and treat it as a blocking item in step D (loop back to fix). Never advance past a red gate.
 - **design phases (specify/clarify/plan/tasks):** the gate is B's `CLEAN`-*with-evidence* in step C. There is no suite to run, so the proof is B citing positive evidence for every success criterion / checklist item. `analyze` has no artifact gate; its findings are the gate.
 
-**B. Dispatch the reviewer.** Use the Task tool to call the `uroboros-reviewer` subagent in the **foreground**. The reviewer's model/effort are declared in its agent definition's frontmatter — the single source of truth. Resolve and honor it like this:
-1. Locate the installed definition: `${CLAUDE_PLUGIN_ROOT}/agents/uroboros-reviewer.md` (the plugin root env var). If that variable is unavailable, search the Claude plugins directory (e.g. `~/.claude/plugins`) for `agents/uroboros-reviewer.md`; a project-local `.claude/agents/uroboros-reviewer.md` also counts if present.
-2. Read its frontmatter `model:` and `effort:`, and pass that same model **explicitly on the Agent call** (the call-level parameter is what reliably takes effect; it guards against the frontmatter being ignored in some versions).
-3. If you cannot locate or read the file, dispatch **without** a call-level model so the agent's own registered frontmatter governs — never substitute a model of your choosing.
-To change the reviewer's model/effort, users edit only the frontmatter (and refresh the plugin install). Put in its prompt:
+**B. Dispatch the reviewer.** Use the Task tool to call the `uroboros-reviewer` subagent in the **foreground**, on the **model and effort the user chose at intake** (recorded in the DECISION LOG / `loop-state.md`) — pass that model **explicitly on the Agent call** (the call-level parameter is what reliably takes effect). Never substitute a model of your choosing; if for any reason no choice is recorded, ask the user now (once) before dispatching. Put in its prompt:
 - `PHASE:` the phase name.
 - `STATE_FILE:` the path to `FEATURE_DIR/loop-state.md` (tell B to read it first).
 - `FEATURE_DIR:` and the absolute paths of the artifacts it must read (resolve from `.specify/feature.json`). For implement, also run `git diff --name-only` / `git diff --stat` and pass the changed-file list.
