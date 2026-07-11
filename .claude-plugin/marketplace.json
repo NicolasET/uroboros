@@ -1,5 +1,6 @@
 {
   "name": "uroboros",
+  "description": "Official marketplace for Uroboros — zero-inference loop engineering for GitHub Spec Kit.",
   "owner": { "name": "NicolasET", "url": "https://github.com/nicolaset" },
   "plugins": [
     {
