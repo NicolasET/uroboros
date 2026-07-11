@@ -1,0 +1,10 @@
+{
+  "name": "uroboros",
+  "displayName": "Uroboros",
+  "version": "0.1.0",
+  "description": "Zero-inference loop engineering for GitHub Spec Kit. One orchestrator drives the full SDD pipeline (specify → implement) end-to-end; an independent reviewer subagent interrogates every phase artifact and turns each inferred decision into an explicit question to the user; a dedicated implementer subagent writes the code on a model you choose at runtime. The loop that eats its own tail — and never guesses.",
+  "author": { "name": "NicolasET", "url": "https://github.com/nicolaset" },
+  "repository": "https://github.com/nicolaset/uroboros",
+  "license": "MIT",
+  "keywords": ["spec-kit", "sdd", "loop-engineering", "orchestrator", "reviewer", "zero-inference", "maker-checker"]
+}

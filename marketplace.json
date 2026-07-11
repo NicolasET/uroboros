@@ -1,0 +1,11 @@
+{
+  "name": "uroboros",
+  "owner": { "name": "NicolasET", "url": "https://github.com/nicolaset" },
+  "plugins": [
+    {
+      "name": "uroboros",
+      "source": "./",
+      "description": "Zero-inference loop engineering for GitHub Spec Kit: orchestrator + independent reviewer + runtime-chosen implementer."
+    }
+  ]
+}
