@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.0 — 2026-07-11
+
+- **Candidate rules to encode:** the final Loop Report now scans the run's findings for recurring classes and proposes concrete rules (constitution / CLAUDE.md / skill) to eliminate that class of finding at the source in future runs. Propose-only; the user decides.
+- **Gate command caching:** the implement verification commands are discovered once, recorded in `loop-state.md`, and reused across rounds and resumes instead of being re-derived every time.
+
 ## 0.2.1 — 2026-07-11
 
 - Model/effort questions (reviewer at intake, implementer before implement) are now **two separate questions** in one `AskUserQuestion` call — model and effort are never combined into single options, and no option may be labeled recommended/default.
