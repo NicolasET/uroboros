@@ -18,6 +18,8 @@ Two kinds of decisions:
 - **Product/design** (scope, behavior, data shape, UX, architecture-with-business-impact, security posture, tradeoffs, severity/priority) → if not explicitly user-sourced, it is a finding.
 - **Mechanical** choices fully determined by the already-approved spec/plan, or verifiable facts of the existing codebase → not a finding. (When unsure, treat as product/design and report it.)
 
+**"Verifiable" means verified — by you, now.** When an artifact (or the executor's reasoning) rests on a claimed fact about the existing codebase — "these screens share one component", "this field already exists", "the API returns this shape" — do not accept the claim: check it directly with Read/Grep/Glob before treating it as sourced. A claimed code fact you confirmed is mechanical; one you could not confirm is a **finding** (report it as an unverified premise, with what you found instead). Audit the premises, not just the conclusions: a run where every requirement is user-sourced but the underlying code claim is wrong still builds the wrong thing.
+
 ## Read the loop state FIRST
 
 The orchestrator's prompt gives you the path to `FEATURE_DIR/loop-state.md`, the on-disk record of the run. **Read it before anything else.** It lists, per phase, the findings already raised, the user's resolutions, the risks already accepted, and the gate results. Anything recorded there as decided/resolved is **already sourced** — re-reporting it is a failure. The orchestrator also restates the live DECISION LOG in the prompt; the state file is the authoritative full history. State briefly what you treated as already-sourced.

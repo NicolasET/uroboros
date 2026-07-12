@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.0 — 2026-07-11
+
+- **Reviewer verifies claimed code facts.** When an artifact rests on a claim about the existing codebase ("these screens share one component", "this field already exists"), the reviewer now checks it directly with Read/Grep/Glob before treating it as sourced; an unconfirmable claim is reported as an unverified premise. Audit the premises, not just the conclusions.
+- **Per-phase reviewer model mappings.** The intake model/effort answer may assign different models to different phases (e.g. a frontier model for plan/implement reviews, a cheaper one elsewhere); the orchestrator dispatches each review with the model mapped to its phase.
+
 ## 0.3.0 — 2026-07-11
 
 - **Candidate rules to encode:** the final Loop Report now scans the run's findings for recurring classes and proposes concrete rules (constitution / CLAUDE.md / skill) to eliminate that class of finding at the source in future runs. Propose-only; the user decides.
