@@ -49,7 +49,7 @@ blocked_on:              # only if status is BLOCKED
     options:
       - <concrete candidate>
       - <concrete candidate>
-notes: <anything the reviewer/orchestrator must know: deviations forced by reality, risks noticed>
+notes: <one line per item the reviewer/orchestrator must know — each deviation forced by reality on its own line, plus risks noticed; the orchestrator logs these under Deviations in loop-state.md>
 ```
 
 Rules:

@@ -75,4 +75,5 @@ Rules for the report:
 - For **implement**, CLEAN additionally requires the orchestrator's verification gate (tests/lint/typecheck) to have **passed** — if the gate failed, you cannot return CLEAN; report the failure.
 - When there are findings or unresolved risks, omit the `evidence` block and use `findings`/`risks`.
 - Each finding needs 2–4 **concrete** candidate options (the user will pick or write their own). Never mark one as already-chosen.
+- **Order findings most-consequential first:** decisions whose answer would change the architecture or data shape before behavior-level gaps, wording-level gaps last. The orchestrator relays them to the user in your order.
 - Be terse. No prose outside the block. No recommendations, no narration, no apologies.

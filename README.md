@@ -24,6 +24,7 @@ Coding agents are optimized to keep moving: they make "informed guesses," accept
 | `/uroboros:run` (command) | **Agent A — orchestrator.** Intake → branch → all six phases → final Loop Report. The only agent that talks to you, edits artifacts, and advances. |
 | `uroboros-reviewer` (subagent) | **Agent B — checker.** Fresh context, read-only. Interrogates each phase artifact per a phase profile; returns structured findings; `CLEAN` requires evidence. Runs on a **model + effort you choose once per run** at intake. |
 | `uroboros-implementer` (subagent) | **Agent C — maker.** Fresh context, write-capable, used only in implement. Runs on a **model + effort you choose at runtime** (the orchestrator asks right before implement). Reports ambiguities instead of guessing. |
+| `references/` | Progressive disclosure: the implement protocol and the Loop Report format live here and are read by the orchestrator only when their phase arrives, keeping the always-loaded command lean. |
 
 ## Prerequisites
 
@@ -50,7 +51,7 @@ Start a feature from a raw idea (any language — the pipeline's internal artifa
 
 The flow you'll experience:
 
-1. **Intake.** Uroboros interrogates your idea (goal, scope in/out, entities, done-criteria), drafts an English `specify` prompt, and asks for your approval.
+1. **Intake.** Uroboros first runs a **blind-spot pass** — exploring the codebase around your idea to surface the unknown unknowns you'd never think to mention (prior work, invariants your idea touches, decisions it silently implies) — then interrogates your idea (goal, scope in/out, entities, done-criteria), asking architecture-changing questions first. It also invites references: existing code, mockups, or libraries close to what you want are the highest-fidelity spec input. Then it drafts an English `specify` prompt and asks for your approval.
 2. **Phases 1–6.** Each phase runs, the reviewer audits it, and its findings arrive to you as multiple-choice questions (free-form always allowed). Your answers are folded back into the artifact; the reviewer re-verifies; the loop advances only on `CLEAN`-with-evidence.
 3. **Implement.** You're asked which model and reasoning effort the implementer should use for this run. The implementer writes the code; the orchestrator runs your real verification suite as a hard gate; the reviewer audits the diff; fixes are re-dispatched to the implementer. Red gate = not done, period.
 4. **Loop Report.** A legible delta: per phase, what changed and why; the full decision log; the gate results; everything left **uncommitted** for you to review and commit.

@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.5.0 — 2026-07-24
+
+Context-engineering pass following Anthropic's Claude 5 guidance (judgement over repetition, progressive disclosure, surfacing unknowns).
+
+- **Blind-spot pass at intake.** Before interrogating, the orchestrator explores the codebase around the idea and surfaces the user's unknown unknowns — prior work in the area, invariants the idea touches, decisions it silently implies — and turns them into intake questions.
+- **Questions ordered by impact.** Intake questions and relayed findings whose answer would change the architecture or data model come first; the reviewer now orders its findings most-consequential first.
+- **References invited at intake.** The orchestrator actively asks for existing code, mockups, or libraries close to what the user wants, reads them, and carries them into the specify prompt — source code is the highest-fidelity spec input.
+- **Deviations persist.** Every deviation the implementer reports in `notes` is appended to `loop-state.md` under the phase's `### Deviations`, and the Loop Report mines deviations (not just findings) for candidate rules.
+- **Progressive disclosure.** The implement protocol and the Loop Report format moved out of the command into `references/implement-protocol.md` and `references/loop-report.md`, read only when their phase arrives.
+- **De-duplicated command prompt.** The model/effort question rules, foreground-dispatch rule, and explicit-model rule now live in one Model/effort protocol section instead of being restated per phase.
+
 ## 0.4.0 — 2026-07-11
 
 - **Reviewer verifies claimed code facts.** When an artifact rests on a claim about the existing codebase ("these screens share one component", "this field already exists"), the reviewer now checks it directly with Read/Grep/Glob before treating it as sourced; an unconfirmable claim is reported as an unverified premise. Audit the premises, not just the conclusions.
