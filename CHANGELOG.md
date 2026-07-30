@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.0 — 2026-07-29
+
+- **Run-mode flags.** `$ARGUMENTS` now accepts leading flags: `--auto` (no questions ever), `--only-business` (only product/business questions; technical choices auto-resolved), `--reviewer=<model>:<effort>` / `--implementer=<model>:<effort>` (pre-answer the model questions), `--rounds=N` (review-round cap). A suppressed question never becomes a silent guess: it is resolved conservatively and recorded as an `A<n>` assumption in a new ASSUMPTION LOG in `loop-state.md`, marked in the artifact, and surfaced as an audit ledger in the Loop Report. Flags persist in `loop-state.md` and govern resumes.
+- **Reviewer is mode-aware.** New `RUN_MODE` input: under a question-suppressing mode, a decision recorded in the ASSUMPTION LOG is sourced-by-policy; a silent (unrecorded) inference is still a finding. Default mode is unchanged.
+- **Migrated to the modern skill layout.** `commands/run.md` → `skills/run/SKILL.md` (the docs now mark `commands/` as legacy). Added `argument-hint` and `disable-model-invocation: true` — the pipeline can no longer be auto-triggered by the model; only an explicit `/uroboros:run` starts it. The invocation name is unchanged.
+- **Foreground dispatch hardened against the new background-by-default.** Since Claude Code v2.1.198 subagents run in the background by default (with a reduced tool set). Hard rule 7 now requires explicitly requesting a synchronous dispatch (`run_in_background: false`) on every Agent call — a background reviewer/implementer would break the loop's sequencing.
+- Agents got display `color`s (reviewer purple, implementer blue) for the task list and transcript.
+
 ## 0.5.0 — 2026-07-24
 
 Context-engineering pass following Anthropic's Claude 5 guidance (judgement over repetition, progressive disclosure, surfacing unknowns).

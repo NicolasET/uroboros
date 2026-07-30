@@ -21,7 +21,7 @@ Coding agents are optimized to keep moving: they make "informed guesses," accept
 
 | Component | Role |
 |---|---|
-| `/uroboros:run` (command) | **Agent A — orchestrator.** Intake → branch → all six phases → final Loop Report. The only agent that talks to you, edits artifacts, and advances. |
+| `/uroboros:run` (skill) | **Agent A — orchestrator.** Intake → branch → all six phases → final Loop Report. The only agent that talks to you, edits artifacts, and advances. User-invoked only (`disable-model-invocation`) — Claude never launches a pipeline on its own. |
 | `uroboros-reviewer` (subagent) | **Agent B — checker.** Fresh context, read-only. Interrogates each phase artifact per a phase profile; returns structured findings; `CLEAN` requires evidence. Runs on a **model + effort you choose once per run** at intake. |
 | `uroboros-implementer` (subagent) | **Agent C — maker.** Fresh context, write-capable, used only in implement. Runs on a **model + effort you choose at runtime** (the orchestrator asks right before implement). Reports ambiguities instead of guessing. |
 | `references/` | Progressive disclosure: the implement protocol and the Loop Report format live here and are read by the orchestrator only when their phase arrives, keeping the always-loaded command lean. |
@@ -56,12 +56,31 @@ The flow you'll experience:
 3. **Implement.** You're asked which model and reasoning effort the implementer should use for this run. The implementer writes the code; the orchestrator runs your real verification suite as a hard gate; the reviewer audits the diff; fixes are re-dispatched to the implementer. Red gate = not done, period.
 4. **Loop Report.** A legible delta: per phase, what changed and why; the full decision log; the gate results; everything left **uncommitted** for you to review and commit.
 
-Interrupted? Run `/uroboros:run` with no arguments — the resume check picks up from the last incomplete phase recorded in `loop-state.md`.
+Interrupted? Run `/uroboros:run` with no arguments — the resume check picks up from the last incomplete phase recorded in `loop-state.md` (including the run's flags).
+
+### Flags — dial down the questions
+
+By default Uroboros asks about everything. Flags let you delegate — but a suppressed question never becomes a silent guess: it becomes a **recorded assumption** (`A1`, `A2`, …) with a rationale, logged in `loop-state.md` and presented as an audit ledger in the final Loop Report.
+
+```
+/uroboros:run --only-business I want sellers to pause a listing...
+/uroboros:run --auto --reviewer=sonnet-5:high --implementer=fable-5:max Fix the...
+```
+
+| Flag | Effect |
+|---|---|
+| `--auto` | No questions at all. Every decision (including intake approval) is resolved conservatively and recorded as an assumption. |
+| `--only-business` | Only product/business questions reach you; purely technical choices (no user-visible difference) become recorded assumptions. |
+| `--reviewer=<model>:<effort>` | Pre-answers the reviewer model/effort question (e.g. `sonnet-5:high`). |
+| `--implementer=<model>:<effort>` | Same for the implementer. |
+| `--rounds=N` | Max review rounds per phase (default 3). |
+
+The zero-inference rule survives intact: the ban was always on inferring *silently*. The reviewer's audit shifts with the mode — a recorded assumption is sourced-by-policy; an unrecorded one is still a finding.
 
 ## Configuration
 
-- **Reviewer model/effort:** chosen at runtime, once per run, via a blocking question at intake — it governs every reviewer dispatch of that run. The frontmatter values in `agents/uroboros-reviewer.md` are only a fallback. The reviewer is the quality gate: pick strong, and downgrade effort before downgrading the model if cost bites.
-- **Implementer model/effort:** chosen at runtime, every run, via the blocking question. The frontmatter values are only a fallback.
+- **Reviewer model/effort:** chosen at runtime, once per run — via the `--reviewer=` flag or a blocking question at intake — it governs every reviewer dispatch of that run. The frontmatter values in `agents/uroboros-reviewer.md` are only a fallback. The reviewer is the quality gate: pick strong, and downgrade effort before downgrading the model if cost bites.
+- **Implementer model/effort:** chosen at runtime, every run — via the `--implementer=` flag or the blocking question. The frontmatter values are only a fallback.
 - **Commit policy:** Uroboros never commits. All changes are left for you, by design.
 - **`loop-state.md`:** lives in the feature directory next to `spec.md`. Keep it as run history, or gitignore `**/loop-state.md`.
 
