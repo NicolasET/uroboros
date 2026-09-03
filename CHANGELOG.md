@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.8.1 — 2026-09-02
+
+Refinements to `/uroboros:compat` after its first run on a real project.
+
+- **`DRIFT` status.** A real hunk that touches none of a skill's contract markers or plugin-facing areas (hook blocks, branch creation, clarify sections, checklist handling, convergence output, artifact paths/ids) is reported as `DRIFT` — one evidence line, no recommendations. `CHANGED` is reserved for hunks inside those areas or a marker that disappeared.
+- **Hooks filtered to the events a run triggers.** The contract lists `hook_directives.events_used` (before/after specify, clarify, plan, tasks, analyze, converge). Mandatory hooks elsewhere (e.g. `before_constitution`) are informational: the loop never invokes those skills, and the implementer subagent replaces `speckit-implement`, so implement hooks never fire.
+- **Terminal-friendly report.** Four-column table (cells under 40 characters), one row per core skill (2.1–2.6), evidence as `Details` bullets only for rows that are not OK, `Next steps` capped at five one-line bullets. The skill is told not to evaluate or propose changes to the contract's policy.
+
 ## 0.8.0 — 2026-09-02
 
 Anchored to **spec-kit 1.0.0**. The plugin was born on 0.12.10 and ran on 0.14–0.16; this release records that lineage, reviews every line since by diff, and makes future spec-kit minors and majors adaptable on purpose.

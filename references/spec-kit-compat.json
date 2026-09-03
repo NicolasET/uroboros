@@ -102,6 +102,15 @@
     "optional": "To execute: `/{command}`",
     "name_mapping": "dots become hyphens: speckit.git.commit -> /speckit-git-commit",
     "note": "since 0.12.x (before the plugin existed) the skills tell the agent to actually invoke a mandatory hook and wait; `before_specify` -> `speckit.git.feature` has been mandatory (optional: false) in every version from 0.12.10 to 1.0.0. Uroboros is the hook executor (hard rule 2)",
+    "events_used": [
+      "before_specify", "after_specify",
+      "before_clarify", "after_clarify",
+      "before_plan", "after_plan",
+      "before_tasks", "after_tasks",
+      "before_analyze", "after_analyze",
+      "before_converge", "after_converge"
+    ],
+    "events_not_used": "constitution, checklist and taskstoissues hooks (skills the loop never invokes) and implement hooks (the uroboros-implementer subagent replaces speckit-implement, so before/after_implement never fire)",
     "policy": {
       "speckit.git.feature": "skip when Phase 0.5 already created the branch",
       "optional": "decline silently, record under DECLINED HOOKS, list in the Loop Report",

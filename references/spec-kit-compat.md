@@ -57,6 +57,7 @@ The pipeline is its own hook executor (hard rule 2 in `skills/run/SKILL.md`):
 - `speckit.git.feature` (`before_specify`) — **skipped** when Phase 0.5 already created the branch. A run never creates a second branch.
 - **Optional hooks** (`speckit.git.commit` after specify/plan, `speckit.agent-context.update`, …) — **declined silently**, recorded under `DECLINED HOOKS` in `loop-state.md`, listed in the Loop Report for the user to run by hand. The run never commits.
 - Any **other mandatory hook** — invoked by the orchestrator, waited for, then the phase continues. Never stop at a directive.
+- **Events a run can trigger:** `before`/`after` of specify, clarify, plan, tasks, analyze and converge (`hook_directives.events_used` in the JSON). `speckit-implement` is replaced by the implementer subagent, so its hooks never fire; constitution, checklist and taskstoissues are never invoked. `/uroboros:compat` only flags mandatory hooks on the triggered events.
 
 ## Review per spec-kit line (0.12.10 → 1.0.0)
 
