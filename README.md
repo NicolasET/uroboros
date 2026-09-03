@@ -25,15 +25,16 @@ Coding agents are optimized to keep moving: they make "informed guesses," accept
 | Component | Role |
 |---|---|
 | `/uroboros:run` (skill) | **Agent A — orchestrator.** Intake → branch → all six phases → final Loop Report. The only agent that talks to you, edits artifacts, and advances. User-invoked only (`disable-model-invocation`) — Claude never launches a pipeline on its own. |
+| `/uroboros:compat` (skill) | **Spec-kit audit.** Compares the spec-kit installed in your project (version, skills, templates, state files, hook directives, skill texts) against the plugin's compatibility contract and its snapshot of the verified skills; reports what changed and which plugin file to adapt. Run it after upgrading spec-kit. Report-only. |
 | `uroboros-reviewer` (subagent) | **Agent B — checker.** Fresh context, read-only. Interrogates each phase artifact per a phase profile; returns structured findings; `CLEAN` requires evidence. Runs on a **model + effort you choose once per run** at intake. |
 | `uroboros-implementer` (subagent) | **Agent C — maker.** Fresh context, write-capable, used only in implement. Runs on a **model + effort you choose at runtime** (the orchestrator asks right before implement). Reports ambiguities instead of guessing. |
-| `references/` | Progressive disclosure: the implement protocol, the Loop Report format, and the goal protocol live here and are read by the orchestrator only when their phase (or mode) arrives, keeping the always-loaded command lean. |
+| `references/` | Progressive disclosure: the implement protocol, the Loop Report format, the goal protocol, and the **spec-kit compatibility contract** (`spec-kit-compat.md` / `.json` plus a snapshot of the verified `speckit-*` skills) live here and are read only when needed, keeping the always-loaded command lean. |
 | `hooks/goal-gate.js` | **Goal-mode keeper.** A Stop hook that replicates `/goal`: while `.uroboros/active-run.json` records an active `--goal` run, it blocks the session from stopping (capped by `--rounds`) so the loop resumes automatically across turns. Inert — near-zero cost — in every other session. |
 
 ## Prerequisites
 
 - **Claude Code** (recent version, with plugins support).
-- For the default pipeline: a repo initialized with **GitHub Spec Kit** using the Claude integration in **skills mode** — the `speckit-specify` … `speckit-implement` skills must exist (`specify init --here --integration claude`).
+- For the default pipeline: a repo initialized with **GitHub Spec Kit** using the Claude integration in **skills mode** — the `speckit-specify` … `speckit-implement` skills must exist (`specify init --here --integration claude`; Claude installs skills by default). Verified against **spec-kit 1.0.0**, supported range `>=0.12 <2` — see [`references/spec-kit-compat.md`](./references/spec-kit-compat.md) and [Keeping up with spec-kit](#keeping-up-with-spec-kit).
 - Optional: spec-kit's **git extension** (`specify extension add git`) for automatic feature-branch creation. Without it, Uroboros continues branchless.
 - **Goal mode (`--goal`) has no spec-kit requirement.** It needs **Node.js** on your PATH (the Stop hook is a Node script) and an accepted workspace **trust dialog** (the hook runs through Claude Code's hooks system).
 
@@ -56,9 +57,9 @@ Start a feature from a raw idea (any language — the pipeline's internal artifa
 
 The flow you'll experience:
 
-1. **Intake.** Uroboros first runs a **blind-spot pass** — exploring the codebase around your idea to surface the unknown unknowns you'd never think to mention (prior work, invariants your idea touches, decisions it silently implies) — then interrogates your idea (goal, scope in/out, entities, done-criteria), asking architecture-changing questions first. It also invites references: existing code, mockups, or libraries close to what you want are the highest-fidelity spec input. Then it drafts an English `specify` prompt and asks for your approval.
+1. **Intake.** Uroboros first checks the project's spec-kit version and skills against its [compatibility contract](./references/spec-kit-compat.md) (a different major gets a question; a missing core skill stops the run), then runs a **blind-spot pass** — exploring the codebase around your idea to surface the unknown unknowns you'd never think to mention (prior work, invariants your idea touches, decisions it silently implies) — then interrogates your idea (goal, scope in/out, entities, done-criteria), asking architecture-changing questions first. It also invites references: existing code, mockups, or libraries close to what you want are the highest-fidelity spec input. Then it drafts an English `specify` prompt and asks for your approval.
 2. **Phases 1–6.** Each phase runs, the reviewer audits it, and its findings arrive to you as self-contained multiple-choice questions — what the artifact says today, why it matters, options phrased as outcomes (free-form always allowed). Your answers are folded back into the artifact; the reviewer re-verifies; the loop advances only on `CLEAN`-with-evidence.
-3. **Implement.** You're asked which model and reasoning effort the implementer should use for this run. The implementer writes the code; the orchestrator runs your real verification suite as a hard gate; the reviewer audits the diff; fixes are re-dispatched to the implementer. Red gate = not done, period.
+3. **Implement.** You're asked which model and reasoning effort the implementer should use for this run. The implementer writes the code; the orchestrator runs your real verification suite as a hard gate; the reviewer audits the diff; fixes are re-dispatched to the implementer. Red gate = not done, period. Once the reviewer is clean and the gate is green, `speckit-converge` (if installed) must confirm nothing specified is still unbuilt — appended convergence tasks open another round.
 4. **Loop Report.** A legible delta: per phase, what changed and why; the full decision log; the gate results; everything left **uncommitted** for you to review and commit.
 
 Interrupted? Run `/uroboros:run` with no arguments — the resume check picks up from the last incomplete phase recorded in `loop-state.md` (including the run's flags).
@@ -104,8 +105,22 @@ What changes and what doesn't:
 - **Reviewer model/effort:** chosen at runtime, once per run — via the `--reviewer=` flag or a blocking question at intake — it governs every reviewer dispatch of that run. The frontmatter values in `agents/uroboros-reviewer.md` are only a fallback. The reviewer is the quality gate: pick strong, and downgrade effort before downgrading the model if cost bites.
 - **Implementer model/effort:** chosen at runtime, every run — via the `--implementer=` flag or the blocking question. The frontmatter values are only a fallback.
 - **Commit policy:** Uroboros never commits. All changes are left for you, by design.
+- **Spec-kit hooks:** optional hooks (auto-commit, agent-context refresh) are declined without asking and listed in the Loop Report for you to run by hand; the branch-creation hook is skipped because the run already created the branch; any other mandatory hook is executed by the orchestrator.
 - **`loop-state.md`:** lives in the feature directory next to `spec.md`. Keep it as run history, or gitignore `**/loop-state.md`.
 - **`.uroboros/` (goal mode only):** holds `goal.md` + `loop-state.md` per feature and the transient `active-run.json` marker the Stop hook reads. Commit the per-feature files if you want run history; `active-run.json` is safe to gitignore.
+
+### Keeping up with spec-kit
+
+Uroboros is anchored to a spec-kit **major.minor line** (currently **1.0**, snapshot of 1.0.0; supported range `>=0.12 <2`) — one snapshot per line, never per patch. The contract — every touchpoint the plugin depends on, where it lives in the plugin, what each spec-kit line since 0.12 changed, and the re-verification procedure — is in [`references/spec-kit-compat.md`](./references/spec-kit-compat.md). Every SDD run checks the project's spec-kit major against it and asks before proceeding on an unverified major.
+
+A project's version is in `.specify/integrations/claude.manifest.json` → `version` (or run `specify version`). To move to a new release:
+
+```
+specify self check                   # is a newer CLI available?
+specify self upgrade                 # upgrade the CLI
+specify integration upgrade claude   # reinstall the speckit-* skills from the new CLI
+/uroboros:compat                     # audit the plugin against what got installed
+```
 
 ## Design notes & credits
 

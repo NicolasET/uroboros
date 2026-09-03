@@ -1,0 +1,130 @@
+{
+  "$comment": "Spec-kit compatibility contract for Uroboros. Human-readable version: references/spec-kit-compat.md. Read by the run skill's compatibility check (skills/run/SKILL.md) and by /uroboros:compat (skills/compat/SKILL.md). Update it, the snapshot, and CHANGELOG.md together whenever a new spec-kit line is adopted.",
+  "policy": {
+    "snapshot": "one snapshot per spec-kit major.minor line, taken from the x.y.0 tag with a pristine `specify init` (see the snapshot's NOTICE.md); patches within a line are never snapshotted",
+    "minor": "a new minor gets a new snapshot, a row in the per-line review, and becomes the baseline",
+    "major": "a new major is never assumed compatible: the run skill asks before proceeding on such a project until the contract has been re-verified"
+  },
+  "baseline": {
+    "line": "1.0",
+    "version": "1.0.0",
+    "tag": "v1.0.0",
+    "released": "2026-08-21",
+    "snapshot": "references/spec-kit-snapshot/1.0.0",
+    "verified": "2026-09-02",
+    "method": "pristine install of the v1.0.0 tag (Claude integration, skills mode, script ps, git extension); every touchpoint below checked on it"
+  },
+  "last_full_run": {
+    "version": "1.0.0",
+    "date": "2026-09-02"
+  },
+  "supported_range": ">=0.12.0 <2.0.0",
+  "version_sources": [
+    {
+      "file": ".specify/integrations/claude.manifest.json",
+      "key": "version",
+      "meaning": "version of the spec-kit that installed the Claude skills the run invokes (refreshed by `specify integration upgrade claude`)"
+    },
+    {
+      "file": ".specify/init-options.json",
+      "key": "speckit_version",
+      "meaning": "version recorded when the project was initialized"
+    },
+    {
+      "file": ".specify/integration.json",
+      "key": "version",
+      "meaning": "integration state version"
+    }
+  ],
+  "cli": {
+    "version_command": "specify version --features --json",
+    "extension_list_command": "specify extension list",
+    "upgrade_commands": [
+      "specify self check",
+      "specify self upgrade",
+      "specify integration upgrade claude"
+    ],
+    "pristine_install": "uvx --from git+https://github.com/github/spec-kit.git@v<version> specify init <dir> --integration claude --script ps --ignore-agent-tools --extension git (before 0.16.0: no --extension flag, run `specify extension add git` inside the project afterwards; --non-interactive exists from 1.0.0)"
+  },
+  "skills_dir": ".claude/skills",
+  "skills": {
+    "required": [
+      "speckit-specify",
+      "speckit-clarify",
+      "speckit-plan",
+      "speckit-tasks",
+      "speckit-analyze",
+      "speckit-implement"
+    ],
+    "optional": {
+      "speckit-git-feature": "feature-branch creation (git extension); absent => the run continues branchless",
+      "speckit-converge": "convergence gate at the close of implement (spec-kit >= 0.11.2); absent => the gate is skipped and noted in loop-state.md"
+    }
+  },
+  "files": {
+    ".specify/feature.json": {
+      "keys": ["feature_directory"],
+      "absent_until_first_feature": true,
+      "used_by": ["skills/run/SKILL.md (Phase -1 resume, step B artifact paths)"]
+    },
+    ".specify/memory/constitution.md": {
+      "used_by": ["agents/uroboros-reviewer.md (analyze profile)", "references/loop-report.md (candidate rules)"]
+    },
+    ".specify/extensions.yml": {
+      "keys": ["hooks"],
+      "used_by": ["skills/run/SKILL.md (hard rule 2, hook policy)"]
+    },
+    ".specify/templates/spec-template.md": {
+      "markers": ["FR-001", "SC-001", "NEEDS CLARIFICATION"],
+      "used_by": ["agents/uroboros-reviewer.md (specify, tasks profiles)", "skills/run/SKILL.md (assumption mechanism, step D fold)"]
+    },
+    ".specify/templates/plan-template.md": {
+      "markers": ["research.md", "data-model.md", "contracts/", "Constitution"],
+      "used_by": ["agents/uroboros-reviewer.md (plan profile)", "agents/uroboros-implementer.md (inputs)", "skills/run/SKILL.md (step B artifact paths)"]
+    },
+    ".specify/templates/tasks-template.md": {
+      "markers": ["[P]"],
+      "used_by": ["agents/uroboros-reviewer.md (tasks profile)", "agents/uroboros-implementer.md (task order, [X] marking)"]
+    }
+  },
+  "skill_markers": {
+    "speckit-specify": ["EXECUTE_COMMAND", "hooks.before_specify", "Branch creation", "NEEDS CLARIFICATION"],
+    "speckit-clarify": ["## Clarifications", "### Session YYYY-MM-DD"],
+    "speckit-plan": ["research.md", "data-model.md", "contracts/"],
+    "speckit-tasks": ["[P]"],
+    "speckit-analyze": ["CRITICAL", "constitution"],
+    "speckit-implement": ["checklist"],
+    "speckit-git-feature": ["GIT_BRANCH_NAME", "feature_numbering"],
+    "speckit-converge": ["## Phase N: Convergence", "Converged", "tasks_appended"]
+  },
+  "hook_directives": {
+    "mandatory": "EXECUTE_COMMAND: {command}",
+    "optional": "To execute: `/{command}`",
+    "name_mapping": "dots become hyphens: speckit.git.commit -> /speckit-git-commit",
+    "note": "since 0.12.x (before the plugin existed) the skills tell the agent to actually invoke a mandatory hook and wait; `before_specify` -> `speckit.git.feature` has been mandatory (optional: false) in every version from 0.12.10 to 1.0.0. Uroboros is the hook executor (hard rule 2)",
+    "policy": {
+      "speckit.git.feature": "skip when Phase 0.5 already created the branch",
+      "optional": "decline silently, record under DECLINED HOOKS, list in the Loop Report",
+      "other_mandatory": "invoke the named skill yourself and continue"
+    }
+  },
+  "artifact_conventions": {
+    "feature_dir_files": ["spec.md", "plan.md", "tasks.md", "research.md", "data-model.md", "contracts/", "checklists/requirements.md"],
+    "ids": ["FR-###", "SC-###", "US<n>", "T###"],
+    "clarifications": "## Clarifications / ### Session YYYY-MM-DD",
+    "convergence_section": "## Phase N: Convergence (append-only, tasks T{max+1}... with source-refs)",
+    "checklists_since_1_0": "checklists/requirements.md is maintained by specify/clarify; implement treats checklist markers as a read-only gate (changed in 1.0.0)"
+  },
+  "snapshot": {
+    "dir": "references/spec-kit-snapshot/1.0.0",
+    "hashes": "references/spec-kit-snapshot/1.0.0/hashes.json",
+    "script_type": "ps",
+    "note": "Projects initialized with `--script sh` differ from the snapshot only in the `.specify/scripts/...` paths inside the skills; treat those hunks as expected. 1.0.0 writes the git-extension skills with CRLF on Windows; the snapshot stores them normalized to LF."
+  },
+  "history": [
+    { "plugin": "0.1.0", "date": "2026-07-10", "spec_kit": "0.12.10", "note": "built against (0.12.10 and 0.12.11 shipped that day)" },
+    { "plugin": "0.6.0", "date": "2026-07-29", "spec_kit": "0.14.4", "note": "contemporary release; ran on it" },
+    { "plugin": "0.7.0", "date": "2026-08-06", "spec_kit": "0.16.0", "note": "contemporary release; ran on it" },
+    { "plugin": "0.8.0", "date": "2026-09-02", "spec_kit": "1.0.0", "note": "contract introduced; every line from 0.12.10 reviewed by diff; full run" }
+  ]
+}

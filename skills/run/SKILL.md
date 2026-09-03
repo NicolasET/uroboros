@@ -1,5 +1,5 @@
 ---
-description: Loop-engineering orchestrator. From a single raw idea (any language), runs the full Spec-Driven Development pipeline end-to-end (specify -> clarify -> plan -> tasks -> analyze -> implement), auto-advancing between phases. After every phase it dispatches the independent `uroboros-reviewer` subagent to interrogate the artifact with zero inference, relays the subagent's findings to the user via AskUserQuestion, folds the answers back in, re-verifies, and only then advances. The user gives the idea once and answers questions; nothing else. Supports flags (--auto, --only-business, --reviewer=, --implementer=, --rounds=) to suppress questions — a suppressed question becomes a recorded assumption, never a silent guess. A --goal flag replaces the SDD pipeline entirely with a goal-mode run (no spec-kit needed): intake produces a completion condition (goal.md) and the run iterates implement -> gate -> review rounds, kept alive across turns by the plugin's Stop hook, until the condition is met.
+description: Loop-engineering orchestrator. From a single raw idea (any language), runs the full Spec-Driven Development pipeline end-to-end (specify -> clarify -> plan -> tasks -> analyze -> implement), auto-advancing between phases. After every phase it dispatches the independent `uroboros-reviewer` subagent to interrogate the artifact with zero inference, relays the subagent's findings to the user via AskUserQuestion, folds the answers back in, re-verifies, and only then advances. The user gives the idea once and answers questions; nothing else. Supports flags (--auto, --only-business, --reviewer=, --implementer=, --rounds=) to suppress questions — a suppressed question becomes a recorded assumption, never a silent guess. A --goal flag replaces the SDD pipeline entirely with a goal-mode run (no spec-kit needed): intake produces a completion condition (goal.md) and the run iterates implement -> gate -> review rounds, kept alive across turns by the plugin's Stop hook, until the condition is met. Before any SDD run it checks the project's spec-kit version and skills against the plugin's compatibility contract (references/spec-kit-compat.json).
 argument-hint: "[--auto | --only-business] [--goal] [--reviewer=<model>:<effort>] [--implementer=<model>:<effort>] [--rounds=N] <idea in any language, or empty to resume>"
 disable-model-invocation: true
 ---
@@ -34,7 +34,7 @@ The zero-inference rule is unchanged in spirit: the ban is on inferring **silent
 ## Hard rules
 
 1. **You and B never infer product/design decisions silently.** Every ambiguity becomes an `AskUserQuestion` to the user — or, when the active flags suppress it, a recorded assumption per the mechanism above. The user only ever interacts through your `AskUserQuestion` prompts and the one intake approval — never at a tool/hook boundary.
-2. **Drive everything yourself. Never stop and wait at an `EXECUTE_COMMAND` line.** When a spec-kit skill prints a hook directive, you invoke the named skill yourself and continue. You do not depend on the spec-kit hook system (it is neutralized for this pipeline).
+2. **Drive everything yourself — you are the hook executor.** Spec-kit skills print hook directives read from `.specify/extensions.yml` (mandatory: `EXECUTE_COMMAND: <command>`; optional: "To execute: `/<command>`"; dots become hyphens). Never stop and wait at one. Resolve each by this policy: (a) `speckit.git.feature` (`before_specify`) — **skip** whenever Phase 0.5 already created the branch; a run never creates a second branch. (b) **Optional hooks** (e.g. `speckit.git.commit`, `speckit.agent-context.update`) — **decline silently**, never ask the user; record each under `DECLINED HOOKS` in `loop-state.md` so the Loop Report can list them for the user to run by hand. (c) Any **other mandatory hook** — invoke the named skill yourself, wait for it, continue. You do not depend on the spec-kit hook system.
 3. **The state file on disk is the spine.** You maintain `FEATURE_DIR/loop-state.md` and write to it continuously — after intake, after every review round, after every gate. It holds the ACTIVE FLAGS, the running DECISION LOG, the ASSUMPTION LOG, and per phase: findings raised, the user's resolutions, risks accepted, deviations, gate results, and iteration counts. The model forgets between turns; the repo does not. You pass its path to B every dispatch so B never re-flags a settled point, and it is what lets the run resume if you are restarted.
 4. **Auto-advance** from one phase to the next without asking permission. The only pauses are `AskUserQuestion` prompts.
 5. **A claim of done is not proof.** A phase is only done when (a) B returns CLEAN *with evidence*, and (b) for implement, the real verification gate (tests/lint/typecheck) passes. B's opinion alone never closes a phase.
@@ -68,7 +68,21 @@ The DECISION LOG and the Loop Report follow the same convention: plain descripti
 
 Decide fresh-vs-resume from the input (after stripping flags):
 - If the remainder of `$ARGUMENTS` contains a new idea, this is a **fresh run** → go to Phase 0. (Do not resume a prior feature just because its state file exists.)
-- If it is empty or says to resume/continue, resolve the active feature from `.specify/feature.json` and read `FEATURE_DIR/loop-state.md`. If it shows an **incomplete** run, restore the recorded ACTIVE FLAGS (overridden by any flags on this invocation) and resume from the last incomplete phase using the recorded DECISION LOG and resolutions — do not restart from intake. If there is no incomplete state to resume, tell the user there is nothing to resume and ask for an idea.
+- If it is empty or says to resume/continue, resolve the active feature from `.specify/feature.json` and read `FEATURE_DIR/loop-state.md`. If it shows an **incomplete** run, restore the recorded ACTIVE FLAGS (overridden by any flags on this invocation) and resume from the last incomplete phase using the recorded DECISION LOG and resolutions — do not restart from intake (resuming implement: follow the implement protocol's resume rule). If there is no incomplete state to resume, tell the user there is nothing to resume and ask for an idea.
+
+## Spec-kit compatibility check (fresh runs and resumes)
+
+The pipeline invokes spec-kit's skills and reads its files, so it is only as reliable as the spec-kit release that installed them. Before Phase 0 (or before resuming a phase), read `${CLAUDE_PLUGIN_ROOT}/references/spec-kit-compat.json` and:
+
+1. **Detect the project's spec-kit version** from the contract's `version_sources`, in order, first hit wins: `.specify/integrations/claude.manifest.json` → `version`, then `.specify/init-options.json` → `speckit_version`, then `.specify/integration.json` → `version`.
+2. **Check the required skills** (`skills.required`) exist under `.claude/skills/`. Note which optional skills are present (`speckit-git-feature`, `speckit-converge`).
+3. **Decide:**
+   - Same major as `baseline.version` and all required skills present → write `SPEC-KIT: <detected> (contract baseline <baseline.version>)` and the optional-skill availability to `loop-state.md` and continue. A minor/patch difference is noted, never asked.
+   - Different major, undetectable version, or outside `supported_range` → one `AskUserQuestion` per the Question protocol: what was detected, which release the plugin is anchored to, and the options *Continue anyway* / *Stop and run `/uroboros:compat` first*. Record the answer. *(Under `--auto`: continue and record `A<n>`.)*
+   - A **required** skill missing → stop: the phase that needs it cannot run. Say which skill is missing and how to install it (`specify integration upgrade claude`). No flag suppresses this stop.
+4. Optional skills absent: no `speckit-git-feature` → run branchless (Phase 0.5); no `speckit-converge` → skip the convergence gate in implement and note it in `loop-state.md`.
+
+Goal mode (`--goal`) skips this section — it does not use spec-kit.
 
 ## Phase 0 — Intake (idea -> approved English specify prompt)
 
@@ -80,7 +94,7 @@ Decide fresh-vs-resume from the input (after stripping flags):
 
 ## Phase 0.5 — Branch + initialize state
 
-Invoke the `speckit-git-feature` skill once with the approved feature description to create the feature branch. If git is unavailable, continue without a branch. Do not let any hook re-create it.
+Invoke the `speckit-git-feature` skill once with the approved feature description to create the feature branch. If git is unavailable or the skill is not installed, continue without a branch. The `before_specify` hook that would create it again is skipped by the hook policy (rule 2).
 
 Then create `FEATURE_DIR/loop-state.md` with: the feature/branch, the ACTIVE FLAGS, the approved English prompt, the DECISION LOG so far (intake answers), the ASSUMPTION LOG so far (if any), and an empty per-phase section for specify → implement. Update this file at every step below.
 
@@ -95,7 +109,7 @@ Run these phases in order, each with input as noted, then review-and-fold before
 | 3 | plan      | `speckit-plan`      | (operates on the spec) |
 | 4 | tasks     | `speckit-tasks`     | (operates on the plan) |
 | 5 | analyze   | `speckit-analyze`   | (cross-artifact, read-only) |
-| 6 | implement | **`uroboros-implementer` subagent — NEVER the inline skill.** Read `${CLAUDE_PLUGIN_ROOT}/references/implement-protocol.md` before doing anything for this phase and follow it. | (executes tasks) |
+| 6 | implement | **`uroboros-implementer` subagent — NEVER the inline skill.** Read `${CLAUDE_PLUGIN_ROOT}/references/implement-protocol.md` before doing anything for this phase and follow it — it also defines the convergence gate (`speckit-converge`) that closes the phase. | (executes tasks) |
 
 For **each** phase:
 
