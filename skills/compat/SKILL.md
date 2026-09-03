@@ -12,7 +12,7 @@ $ARGUMENTS
 
 You are auditing **the project in the current working directory** against Uroboros's spec-kit compatibility contract. You read, compare and report. You **never edit** the project, the plugin, or the contract — updating the contract is a deliberate step the maintainer performs in the plugin repository (see `references/spec-kit-compat.md`, "Re-verification procedure"). You do not evaluate, defend, or propose changes to the contract's policy (what is snapshotted, which patches are reviewed); you report what the files say.
 
-Inputs (all under `${CLAUDE_PLUGIN_ROOT}`):
+Inputs (all under `${CLAUDE_PLUGIN_ROOT}` — the plugin root is the directory that contains `skills/`, `references/` and `.claude-plugin/`, i.e. two levels above this SKILL.md; resolve it once and do not look for `references/` inside `skills/compat/`):
 
 - `references/spec-kit-compat.json` — the contract: the baseline release and its snapshot (`baseline`), the supported range, version sources, the install manifest that hashes every installed skill (`install_manifest`), required/optional skills, files and markers, skill markers, hook directive shapes and the hook events a run triggers (`hook_directives.events_used`).
 - `references/spec-kit-compat.md` — the touchpoint table; its `#` numbers are the row ids below.
@@ -32,7 +32,7 @@ If `.specify/` does not exist in the working directory, say this is not a spec-k
 
 ## 3. Skills
 
-Rows: `2.1`–`2.6` for `skills.required` in contract order, `3` for `speckit-git-feature`, `4` for `speckit-converge`. For each:
+Rows: `2.1`–`2.6` for `skills.required` in contract order, `3` for `speckit-git-feature`, `4` for `speckit-converge`. Do the hashing and the `--stat` comparison for all eight skills in **one** shell invocation (a short loop or a `node -e` script), then open only the diffs that are not identical — not one skill per round trip. For each:
 
 1. Does `<skills_dir>/<skill>/SKILL.md` exist? Missing required → **MISSING** (the run cannot execute that phase). Missing optional → **ABSENT** (state the fallback from the contract).
 2. **Local-edit check.** The contract's `install_manifest` file records the SHA-256 of every skill file as spec-kit wrote it. Hash the installed file as-is and with CRLF normalized to LF (`node -e` with `crypto`, or `sha256sum`); if neither matches the manifest entry, the file was **modified after install** — a formatter such as Prettier, or a hand edit — → status **LOCAL**. Skills the manifest does not list (extension skills such as `speckit-git-feature`) skip this step.
@@ -58,7 +58,7 @@ Status: **OK** or **NOTE**.
 
 ## 6. Report
 
-Print exactly this structure. Every table cell stays under 40 characters; anything longer goes to the `Details` bullets. `Adapt` is `-` for OK, DRIFT and LOCAL, the plugin file(s) to touch for CHANGED and MISSING, the fallback for ABSENT. A LOCAL row's `Details` line says the file was modified after install and that `specify integration upgrade claude` will refuse to overwrite it without `--force`.
+Print exactly this structure, starting with the four header lines — they are mandatory even when every row is OK. Every table cell stays under 40 characters; anything longer goes to the `Details` bullets. `Adapt` is `-` for OK, DRIFT and LOCAL, the plugin file(s) to touch for CHANGED and MISSING, the fallback for ABSENT. A LOCAL row's `Details` line names the file, the mismatch, and what kind of hunks the diff shows (formatting only, or which real ones); the note that `specify integration upgrade claude` refuses to overwrite locally modified files without `--force` goes **once** in `Info`, not on every row.
 
 ```
 SPEC-KIT COMPAT REPORT
@@ -87,7 +87,7 @@ contract: baseline <version> (verified <date>)   range <supported_range>   verdi
 Details (rows that are not OK only):
 - <row> <touchpoint> — <STATUS>: <one line of evidence: what changed or is missing, where; quote the line or marker>
 
-Info: <one line, or "none": version sources that disagree; CLI newer than the project; speckit.git.feature disabled or missing; mandatory hooks on events the loop never triggers>
+Info: <one line, or "none": version sources that disagree; CLI newer than the project; LOCAL files present (the --force note, once); speckit.git.feature disabled or missing; mandatory hooks on events the loop never triggers>
 
 Diffs: <hunks behind DRIFT and CHANGED rows; every hunk with --verbose; "none" otherwise>
 

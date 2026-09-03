@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.3 — 2026-09-02
+
+- `/uroboros:compat` polish after the LOCAL run: the four report header lines are mandatory even when every row is OK; the plugin root is resolved once (the directory holding `skills/`, `references/`, `.claude-plugin/`) instead of probing `skills/compat/`; hashing and `--stat` comparison of the eight skills happen in one shell invocation; the `--force` note for locally modified files is stated once in `Info` rather than on every LOCAL row.
+
 ## 0.8.2 — 2026-09-02
 
 - **`/uroboros:compat` tells local edits from spec-kit changes.** The Claude install manifest (`.specify/integrations/claude.manifest.json`, now `install_manifest` in the contract) records the SHA-256 of every skill file as spec-kit wrote it; the audit hashes each installed skill (as-is and CRLF-normalized) and reports **LOCAL** when it no longer matches — a project formatter (Prettier on `.claude/skills/*`) or a hand edit, not spec-kit drift — noting that `specify integration upgrade claude` will refuse to overwrite such files without `--force`. Formatter output (frontmatter quote style, escaped markdown characters, table pipe padding, blank lines) is now an expected hunk, so a reformatted but otherwise identical skill no longer shows as DRIFT.
