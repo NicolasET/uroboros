@@ -30,6 +30,8 @@ Read in this order; the first hit wins:
 
 The CLI reports itself with `specify version` (`--features --json` for a machine-readable capability list, which is CLI-level only — it says nothing about skills or templates). `specify extension list` reports the git extension version.
 
+The same `claude.manifest.json` records the **SHA-256 of every skill file as spec-kit wrote it**. `/uroboros:compat` hashes each installed skill against it to tell a file **modified after install** (a project formatter such as Prettier on `.claude/skills/*`, or a hand edit — reported as `LOCAL`) from a change spec-kit itself shipped. Spec-kit's `integration upgrade` uses the same hashes and refuses to overwrite locally modified files without `--force`.
+
 ## Touchpoints
 
 Everything the plugin assumes about spec-kit, where that assumption lives in the plugin, and how to check it.

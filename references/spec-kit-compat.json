@@ -36,6 +36,11 @@
       "meaning": "integration state version"
     }
   ],
+  "install_manifest": {
+    "file": ".specify/integrations/claude.manifest.json",
+    "key": "files",
+    "meaning": "SHA-256 of every file spec-kit installed for the Claude integration, keyed by path (e.g. .claude/skills/speckit-specify/SKILL.md); a different hash on disk means the file was modified after install (formatter, hand edit) — spec-kit's own `integration upgrade` refuses to overwrite such files without --force. Extension skills (speckit-git-feature) are not listed"
+  },
   "cli": {
     "version_command": "specify version --features --json",
     "extension_list_command": "specify extension list",

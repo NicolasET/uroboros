@@ -14,7 +14,7 @@ You are auditing **the project in the current working directory** against Urobor
 
 Inputs (all under `${CLAUDE_PLUGIN_ROOT}`):
 
-- `references/spec-kit-compat.json` — the contract: the baseline release and its snapshot (`baseline`), the supported range, version sources, required/optional skills, files and markers, skill markers, hook directive shapes and the hook events a run triggers (`hook_directives.events_used`).
+- `references/spec-kit-compat.json` — the contract: the baseline release and its snapshot (`baseline`), the supported range, version sources, the install manifest that hashes every installed skill (`install_manifest`), required/optional skills, files and markers, skill markers, hook directive shapes and the hook events a run triggers (`hook_directives.events_used`).
 - `references/spec-kit-compat.md` — the touchpoint table; its `#` numbers are the row ids below.
 - `<baseline.snapshot>/<skill>/SKILL.md` — the skill texts of the baseline release, plus `hashes.json`.
 
@@ -35,12 +35,13 @@ If `.specify/` does not exist in the working directory, say this is not a spec-k
 Rows: `2.1`–`2.6` for `skills.required` in contract order, `3` for `speckit-git-feature`, `4` for `speckit-converge`. For each:
 
 1. Does `<skills_dir>/<skill>/SKILL.md` exist? Missing required → **MISSING** (the run cannot execute that phase). Missing optional → **ABSENT** (state the fallback from the contract).
-2. If it exists: compare with `git diff --no-index --ignore-cr-at-eol --stat <snapshot file> <installed file>`. Identical → **OK**. Otherwise get the unified diff (same flags, without `--stat`) and classify every hunk:
-   - **expected** — only `.specify/scripts/...` path differences (script type `ps` vs `sh`) or whitespace-only changes;
+2. **Local-edit check.** The contract's `install_manifest` file records the SHA-256 of every skill file as spec-kit wrote it. Hash the installed file as-is and with CRLF normalized to LF (`node -e` with `crypto`, or `sha256sum`); if neither matches the manifest entry, the file was **modified after install** — a formatter such as Prettier, or a hand edit — → status **LOCAL**. Skills the manifest does not list (extension skills such as `speckit-git-feature`) skip this step.
+3. Compare with `git diff --no-index --ignore-cr-at-eol --stat <snapshot file> <installed file>`. Identical → **OK**. Otherwise get the unified diff (same flags, without `--stat`) and classify every hunk:
+   - **expected** — `.specify/scripts/...` path differences (script type `ps` vs `sh`); whitespace, blank lines, indentation; formatter output such as YAML frontmatter quote style (`"x"` ↔ `'x'`), escaped markdown characters (`\*`, `\_`), table pipe padding or realignment;
    - **inert** — any other change that touches none of the skill's `skill_markers` and none of the plugin-facing areas: hook blocks, branch creation, clarify section names, checklist handling, convergence output, artifact paths and ids;
    - **real** — a change inside one of those areas.
-   Status: **OK** (expected hunks only), **DRIFT** (inert hunks, no real ones), **CHANGED** (at least one real hunk).
-3. Check every string in `skill_markers[<skill>]` is still present in the installed file. A missing marker is **CHANGED** whatever the diff looked like — name the marker.
+   Status: **OK** (expected hunks only), **DRIFT** (inert hunks, no real ones), **CHANGED** (at least one real hunk). A **LOCAL** file keeps that status unless a hunk is real (then **CHANGED**); its diff mixes local edits with spec-kit changes, so print it only with `--verbose`.
+4. Check every string in `skill_markers[<skill>]` is still present in the installed file. A missing marker is **CHANGED** whatever the diff looked like — name the marker.
 
 ## 4. Files, keys and markers
 
@@ -57,7 +58,7 @@ Status: **OK** or **NOTE**.
 
 ## 6. Report
 
-Print exactly this structure. Every table cell stays under 40 characters; anything longer goes to the `Details` bullets. `Adapt` is `-` for OK and DRIFT, the plugin file(s) to touch for CHANGED and MISSING, the fallback for ABSENT.
+Print exactly this structure. Every table cell stays under 40 characters; anything longer goes to the `Details` bullets. `Adapt` is `-` for OK, DRIFT and LOCAL, the plugin file(s) to touch for CHANGED and MISSING, the fallback for ABSENT. A LOCAL row's `Details` line says the file was modified after install and that `specify integration upgrade claude` will refuse to overwrite it without `--force`.
 
 ```
 SPEC-KIT COMPAT REPORT
