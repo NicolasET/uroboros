@@ -6,6 +6,8 @@ You give one raw idea. Uroboros runs the entire Spec-Driven Development pipeline
 
 You seed the idea once and answer questions. That's the whole interface.
 
+Don't want the full pipeline? [`--goal`](#goal-mode--skip-the-pipeline) runs the same zero-inference loop against a completion condition instead — no spec-kit required.
+
 > *The uroboros is the serpent that eats its own tail: a loop. This one also refuses to swallow assumptions.*
 
 ## Why
@@ -13,6 +15,7 @@ You seed the idea once and answer questions. That's the whole interface.
 Coding agents are optimized to keep moving: they make "informed guesses," accept "reasonable defaults," and declare themselves done. That momentum is exactly how your idea drifts away from what gets built. Uroboros inverts the incentive:
 
 - **Zero inference.** Any gap or ambiguity in scope, behavior, data, UX, or architecture becomes an `AskUserQuestion` — never a silent assumption.
+- **Questions you can actually answer.** Every question is self-contained: it tells you what the artifact currently says, why it matters, and offers the current value as an explicit option — never a bare internal id like "F17".
 - **Maker/checker split.** The agent that produces an artifact is never the one that judges it. A fresh-context reviewer audits every phase ([the single most useful structural trick in a loop](https://addyosmani.com/blog/loop-engineering/)).
 - **Done is proof, not a claim.** On implement, the orchestrator runs your real test/lint/typecheck suite as a hard gate; on design phases, the reviewer's `CLEAN` verdict requires positive evidence per success criterion — "found nothing to flag" is not a pass.
 - **The repo remembers.** A per-feature `loop-state.md` records every finding, resolution, accepted risk, and gate result. Interrupted runs resume instead of restarting.
@@ -24,13 +27,15 @@ Coding agents are optimized to keep moving: they make "informed guesses," accept
 | `/uroboros:run` (skill) | **Agent A — orchestrator.** Intake → branch → all six phases → final Loop Report. The only agent that talks to you, edits artifacts, and advances. User-invoked only (`disable-model-invocation`) — Claude never launches a pipeline on its own. |
 | `uroboros-reviewer` (subagent) | **Agent B — checker.** Fresh context, read-only. Interrogates each phase artifact per a phase profile; returns structured findings; `CLEAN` requires evidence. Runs on a **model + effort you choose once per run** at intake. |
 | `uroboros-implementer` (subagent) | **Agent C — maker.** Fresh context, write-capable, used only in implement. Runs on a **model + effort you choose at runtime** (the orchestrator asks right before implement). Reports ambiguities instead of guessing. |
-| `references/` | Progressive disclosure: the implement protocol and the Loop Report format live here and are read by the orchestrator only when their phase arrives, keeping the always-loaded command lean. |
+| `references/` | Progressive disclosure: the implement protocol, the Loop Report format, and the goal protocol live here and are read by the orchestrator only when their phase (or mode) arrives, keeping the always-loaded command lean. |
+| `hooks/goal-gate.js` | **Goal-mode keeper.** A Stop hook that replicates `/goal`: while `.uroboros/active-run.json` records an active `--goal` run, it blocks the session from stopping (capped by `--rounds`) so the loop resumes automatically across turns. Inert — near-zero cost — in every other session. |
 
 ## Prerequisites
 
 - **Claude Code** (recent version, with plugins support).
-- A repo initialized with **GitHub Spec Kit** using the Claude integration in **skills mode** — the `speckit-specify` … `speckit-implement` skills must exist (`specify init --here --integration claude`).
+- For the default pipeline: a repo initialized with **GitHub Spec Kit** using the Claude integration in **skills mode** — the `speckit-specify` … `speckit-implement` skills must exist (`specify init --here --integration claude`).
 - Optional: spec-kit's **git extension** (`specify extension add git`) for automatic feature-branch creation. Without it, Uroboros continues branchless.
+- **Goal mode (`--goal`) has no spec-kit requirement.** It needs **Node.js** on your PATH (the Stop hook is a Node script) and an accepted workspace **trust dialog** (the hook runs through Claude Code's hooks system).
 
 ## Install
 
@@ -52,7 +57,7 @@ Start a feature from a raw idea (any language — the pipeline's internal artifa
 The flow you'll experience:
 
 1. **Intake.** Uroboros first runs a **blind-spot pass** — exploring the codebase around your idea to surface the unknown unknowns you'd never think to mention (prior work, invariants your idea touches, decisions it silently implies) — then interrogates your idea (goal, scope in/out, entities, done-criteria), asking architecture-changing questions first. It also invites references: existing code, mockups, or libraries close to what you want are the highest-fidelity spec input. Then it drafts an English `specify` prompt and asks for your approval.
-2. **Phases 1–6.** Each phase runs, the reviewer audits it, and its findings arrive to you as multiple-choice questions (free-form always allowed). Your answers are folded back into the artifact; the reviewer re-verifies; the loop advances only on `CLEAN`-with-evidence.
+2. **Phases 1–6.** Each phase runs, the reviewer audits it, and its findings arrive to you as self-contained multiple-choice questions — what the artifact says today, why it matters, options phrased as outcomes (free-form always allowed). Your answers are folded back into the artifact; the reviewer re-verifies; the loop advances only on `CLEAN`-with-evidence.
 3. **Implement.** You're asked which model and reasoning effort the implementer should use for this run. The implementer writes the code; the orchestrator runs your real verification suite as a hard gate; the reviewer audits the diff; fixes are re-dispatched to the implementer. Red gate = not done, period.
 4. **Loop Report.** A legible delta: per phase, what changed and why; the full decision log; the gate results; everything left **uncommitted** for you to review and commit.
 
@@ -73,9 +78,26 @@ By default Uroboros asks about everything. Flags let you delegate — but a supp
 | `--only-business` | Only product/business questions reach you; purely technical choices (no user-visible difference) become recorded assumptions. |
 | `--reviewer=<model>:<effort>` | Pre-answers the reviewer model/effort question (e.g. `sonnet-5:high`). |
 | `--implementer=<model>:<effort>` | Same for the implementer. |
-| `--rounds=N` | Max review rounds per phase (default 3). |
+| `--rounds=N` | Max review rounds per phase (default 3). In goal mode, also caps the Stop hook's automatic relaunches. |
+| `--goal` | **Goal mode** — replaces the SDD pipeline with a completion condition (see below). Combines freely with every flag above. |
 
 The zero-inference rule survives intact: the ban was always on inferring *silently*. The reviewer's audit shifts with the mode — a recorded assumption is sourced-by-policy; an unrecorded one is still a finding.
+
+### Goal mode — skip the pipeline
+
+For small tasks where full SDD is overkill, or repos where spec-kit isn't installed, `--goal` swaps the six phases for a **completion condition**, in the spirit of Claude Code's [`/goal`](https://code.claude.com/docs/en/goal.md):
+
+```
+/uroboros:run --goal Add a /health endpoint that returns the build version...
+/uroboros:run --goal --auto --reviewer=sonnet-5:high --implementer=fable-5:max Fix the...
+```
+
+What changes and what doesn't:
+
+- **Intake is identical** (blind-spot pass, zero-inference interrogation, references) — but it produces a `goal.md` (measurable completion condition + numbered acceptance criteria + constraints) instead of a specify prompt, and the reviewer audits it before any code is written.
+- **The work runs in rounds** — implementer → real verification gate → reviewer — until the reviewer returns `CLEAN` with evidence per acceptance criterion **and** the gate is green, capped by `--rounds`.
+- **The plugin's Stop hook keeps the run alive across turns**, replicating `/goal`: while `.uroboros/active-run.json` records an active run, ending a turn relaunches the loop instead of returning control (also capped by `--rounds`). You never re-invoke the command to resume.
+- **Everything else survives**: maker/checker split, runtime-chosen models, the assumption ledger under `--auto`/`--only-business`, the hard gate, the Loop Report, and the no-commit policy. State lives in `.uroboros/<slug>/` instead of the spec-kit feature directory.
 
 ## Configuration
 
@@ -83,6 +105,7 @@ The zero-inference rule survives intact: the ban was always on inferring *silent
 - **Implementer model/effort:** chosen at runtime, every run — via the `--implementer=` flag or the blocking question. The frontmatter values are only a fallback.
 - **Commit policy:** Uroboros never commits. All changes are left for you, by design.
 - **`loop-state.md`:** lives in the feature directory next to `spec.md`. Keep it as run history, or gitignore `**/loop-state.md`.
+- **`.uroboros/` (goal mode only):** holds `goal.md` + `loop-state.md` per feature and the transient `active-run.json` marker the Stop hook reads. Commit the per-feature files if you want run history; `active-run.json` is safe to gitignore.
 
 ## Design notes & credits
 
