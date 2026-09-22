@@ -22,11 +22,11 @@ Your obligations as orchestrator:
 
 - **Create** the marker in G2: `{"feature": "<slug>", "dir": ".uroboros/<slug>", "status": "active", "rounds_used": 0, "relaunches": 0, "rounds_max": <--rounds value, default 3>}`.
 - **Set a terminal `status`** — `"complete"` when the run closes (G5), `"stopped"` when you stop deliberately (round cap exhausted, unrecoverable error, user told you to stop). An `"active"` marker left behind keeps relaunching the session — never end a goal run without updating it.
-- When the hook relaunches you mid-run, treat it as a **resume**: re-read `active-run.json` and `loop-state.md` and continue from the recorded point. A fresh `/uroboros:run --goal` with no idea resumes the same way if `active-run.json` shows an active run — this replaces the Phase −1 check.
+- When the hook relaunches you mid-run, treat it as a **resume**: re-read `active-run.json` and `loop-state.md` and continue from the recorded point. A fresh `/uroboros:run --goal` with no idea resumes the same way if `active-run.json` shows an active run — this replaces the Phase −1 check. With no active run but a `.uroboros/intake.md` draft, the run was interrupted during intake: restore it and continue G1 from the recorded frontier.
 
 ## G1 — Intake (idea → approved goal.md)
 
-Run Phase 0's intake exactly as written in the command (blind-spot pass, impact-ordered interrogation, invited references, run-mode question rules) — but the deliverable is a draft **`goal.md`** instead of a specify prompt:
+Run Phase 0's intake exactly as written in the command (intake draft in `.uroboros/intake.md`, blind-spot pass, decision tree, frontier rounds, facts looked up rather than asked, invited references, shared-understanding check, run-mode question rules) — but the deliverable is a draft **`goal.md`** instead of a specify prompt. `goal.md` has no clarification phase after it, so a **DEFERRED** decision cannot pass through: before the draft, put each one back to the user with narrower, concrete options, or — if they choose so — move it to **Out of scope**. Nothing deferred remains when `goal.md` is approved.
 
 - **Goal condition** — one measurable end state with a **stated check**, verifiable from command output or observable behavior (e.g. "`npm test` exits 0 and `GET /listings/:id` returns `paused: true` after the pause call"), not from intent.
 - **Acceptance criteria** — numbered `AC-1`, `AC-2`, …; each measurable and user-sourced. These are what the reviewer demands evidence for.
@@ -39,7 +39,7 @@ Show the draft and get approval via `AskUserQuestion` (Approve / Edit; self-appr
 ## G2 — Branch + state + marker
 
 - Create a feature branch with plain git (`git checkout -b goal/<slug>`); if git is unavailable, continue branchless. Do not use `speckit-git-feature`.
-- Create `.uroboros/<slug>/goal.md` and `loop-state.md` (ACTIVE FLAGS, approved goal, DECISION LOG so far, ASSUMPTION LOG so far, empty per-round section).
+- Create `.uroboros/<slug>/goal.md` and `loop-state.md` (ACTIVE FLAGS, approved goal, DECISION LOG so far, ASSUMPTION LOG so far — copied from `.uroboros/intake.md` — empty per-round section). Delete `.uroboros/intake.md` once the copy is written.
 - Write `.uroboros/active-run.json` per the contract above. From this point the hook keeps the session alive until you set a terminal status.
 
 ## G3 — Review the goal artifact

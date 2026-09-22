@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.9.0 — 2026-09-22
+
+Intake (Phase 0 / G1) borrows the interview mechanics of Matt Pocock's `grilling` skill, keeping the plugin's neutral question protocol (no recommended options).
+
+- **Decision tree + frontier rounds.** Intake maps the open decisions as a tree and asks in rounds: each round is the frontier — only decisions whose prerequisites are settled — split across `AskUserQuestion` calls of ≤4, architecture/data-model questions first. The tree is recomputed after every round; a question that hinges on another still-open question never shares its round.
+- **Facts are looked up, decisions are asked.** A question that needs a fact the repo can answer is resolved with Grep/Glob/Read mid-intake; only its dependents wait.
+- **Pressure checklist.** The tree now covers explicit non-goals, failure behavior (errors, invalid input, missing data, repeated/concurrent actions) and edge cases. Under `--only-business`, user-visible failure behavior counts as business.
+- **Scope split.** When the tree holds several independently shippable features, the user chooses the slice for this run; the rest become non-goals (smallest coherent slice + `A<n>` under `--auto`).
+- **"I don't know" and ungrillable questions.** Both become DEFERRED decisions, never filled in. In SDD the specify prompt ends with an **Open decisions** section so specify marks them `[NEEDS CLARIFICATION]` (beyond its cap of 3 they land in Assumptions, which the specify review relays). Look-and-feel questions ask once for a mockup or reference instead of being rephrased. In goal mode a deferred decision must be settled or moved out of scope before `goal.md` is approved.
+- **Shared-understanding check.** Before the English prompt (or `goal.md`), the user confirms a summary in their language of settled decisions, non-goals and deferred items; "something is off" reopens the affected branches. Skipped and recorded under `--auto`.
+- **Intake survives interruption.** Progress is written to `.uroboros/intake.md` after every round; a resume invocation with no idea continues intake from the recorded frontier. Phase 0.5 / G2 copy it into `loop-state.md` (now also carrying the DEFERRED list) and delete it.
+
 ## 0.8.3 — 2026-09-02
 
 - `/uroboros:compat` polish after the LOCAL run: the four report header lines are mandatory even when every row is OK; the plugin root is resolved once (the directory holding `skills/`, `references/`, `.claude-plugin/`) instead of probing `skills/compat/`; hashing and `--stat` comparison of the eight skills happen in one shell invocation; the `--force` note for locally modified files is stated once in `Info` rather than on every LOCAL row.
