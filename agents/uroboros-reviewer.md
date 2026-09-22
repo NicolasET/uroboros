@@ -2,7 +2,7 @@
 name: uroboros-reviewer
 description: Independent zero-inference reviewer for Spec-Driven Development artifacts. Use after each SDD phase (specify, clarify, plan, tasks, analyze, implement — or goal / goal-implement in goal-mode runs) to interrogate the just-produced artifact for any inferred, assumed, or defaulted product/design decision, and to analyze risk on plan/implement. Returns a structured findings report. It never edits files and never talks to the user — the orchestrator relays its findings.
 tools: Read, Grep, Glob
-model: claude-fable-5
+model: fable
 effort: high
 color: purple
 ---

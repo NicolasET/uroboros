@@ -70,14 +70,14 @@ By default Uroboros asks about everything. Flags let you delegate — but a supp
 
 ```
 /uroboros:run --only-business I want sellers to pause a listing...
-/uroboros:run --auto --reviewer=sonnet-5:high --implementer=fable-5:max Fix the...
+/uroboros:run --auto --reviewer=sonnet:high --implementer=fable:max Fix the...
 ```
 
 | Flag | Effect |
 |---|---|
 | `--auto` | No questions at all. Every decision (including intake approval) is resolved conservatively and recorded as an assumption. |
 | `--only-business` | Only product/business questions reach you; purely technical choices (no user-visible difference) become recorded assumptions. |
-| `--reviewer=<model>:<effort>` | Pre-answers the reviewer model/effort question (e.g. `sonnet-5:high`). |
+| `--reviewer=<model>:<effort>` | Pre-answers the reviewer model/effort question (e.g. `sonnet:high`). |
 | `--implementer=<model>:<effort>` | Same for the implementer. |
 | `--rounds=N` | Max review rounds per phase (default 3). In goal mode, also caps the Stop hook's automatic relaunches. |
 | `--goal` | **Goal mode** — replaces the SDD pipeline with a completion condition (see below). Combines freely with every flag above. |
@@ -90,7 +90,7 @@ For small tasks where full SDD is overkill, or repos where spec-kit isn't instal
 
 ```
 /uroboros:run --goal Add a /health endpoint that returns the build version...
-/uroboros:run --goal --auto --reviewer=sonnet-5:high --implementer=fable-5:max Fix the...
+/uroboros:run --goal --auto --reviewer=sonnet:high --implementer=fable:max Fix the...
 ```
 
 What changes and what doesn't:

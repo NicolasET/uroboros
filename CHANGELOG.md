@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.1 — 2026-09-22
+
+- **Model choices without version numbers.** The reviewer/implementer model question offers families (Fable, Opus, Sonnet — the latest release of each) instead of pinned versions that went stale (Fable 5, Opus 4.8). Dispatches pass the family alias, which resolves to the newest release; an exact version named via "Other" is recorded as given and dispatched by its family. Agent frontmatter fallbacks are now `model: opus` (implementer) and `model: fable` (reviewer); README flag examples use `sonnet:high` / `fable:max`.
+
 ## 0.9.0 — 2026-09-22
 
 Intake (Phase 0 / G1) borrows the interview mechanics of Matt Pocock's `grilling` skill, keeping the plugin's neutral question protocol (no recommended options).
