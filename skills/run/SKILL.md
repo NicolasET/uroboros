@@ -39,7 +39,7 @@ The zero-inference rule is unchanged in spirit: the ban is on inferring **silent
 4. **Auto-advance** from one phase to the next without asking permission. The only pauses are `AskUserQuestion` prompts.
 5. **A claim of done is not proof.** A phase is only done when (a) B returns CLEAN *with evidence*, and (b) for implement, the real verification gate (tests/lint/typecheck) passes. B's opinion alone never closes a phase.
 6. **You never commit.** Leave all artifacts and code changes staged/unstaged for the user to commit per their GitFlow. The final report makes the full delta legible so the user can review what the loop produced without having watched each phase.
-7. **No subagent runs on an unchosen model, and every dispatch is foreground/blocking.** Model and effort come from the Model/effort protocol below; pass the chosen model explicitly on every Agent call, and wait for each subagent's report before doing anything else. **Explicitly request a foreground/synchronous dispatch (`run_in_background: false`) on every Agent call** — recent Claude Code versions run subagents in the background *by default*, and a background dispatch both breaks the loop's sequencing and runs the subagent with a reduced tool set.
+7. **No subagent runs on an unchosen model, and every dispatch is foreground/blocking.** Model and effort come from the Model/effort protocol below; pass the chosen model explicitly on every Agent call, and wait for each subagent's report before doing anything else. **Explicitly request a foreground/synchronous dispatch (`run_in_background: false`) on every Agent call** — recent Claude Code versions run subagents in the background *by default*, and a background dispatch both breaks the loop's sequencing and runs the subagent with a reduced tool set. Check the `model:` line of every report against the resolved release (Model check, below) before using the report.
 8. **Every question is self-contained.** The user never sees B's report, the implementer's report, or the artifacts — only your `AskUserQuestion` prompts. A question that leans on an internal id (`F17`, `FR-004`, `A3`) or refers to an earlier answer by its label is a defect. Follow the Question protocol below for every question of the run.
 
 ## Model/effort protocol
@@ -49,6 +49,15 @@ Both subagents run on a model + effort the user chooses at runtime. If the corre
 - **Reviewer:** settled once at intake (flag or question); the answer governs every reviewer dispatch of the run — do not re-ask per dispatch. **Per-phase mappings are allowed:** if the user's answer (typically via "Other") assigns different models/efforts to different phases — e.g. "Fable xhigh for plan and implement reviews, Sonnet high for the rest" — record the mapping and dispatch each review with the model/effort mapped to its phase.
 - **Implementer:** settled right before implement (flag or question), once per run.
 - Record every choice in the DECISION LOG and `loop-state.md`. On a resume, re-confirm the recorded choice instead of silently reusing it (in `--auto`, reuse it and note the reuse in the log). If a dispatch is due and no choice is recorded, apply the protocol now (once) — never substitute a model of your own outside the assumption mechanism.
+
+**Model guides.** A model release sometimes ships with its own prompting guidance. The plugin carries it curated per exact release in `${CLAUDE_PLUGIN_ROOT}/references/model-guides/<family>-<version>.md` (e.g. `opus-5.5.md`), with one section per role: `## Orchestrator`, `## Reviewer`, `## Implementer`.
+
+- **Subagents.** Once a subagent's choice is settled, resolve its family alias to the exact release it runs on — the latest release of that family per the model list in your environment context. If `<family>-<version>.md` exists for that release, paste its section for the role, verbatim, as a `MODEL GUIDE:` block into every dispatch of that agent. A guide for any other release of the family is never applied. If the release cannot be resolved, or no guide exists for it, dispatch without one.
+- **Yourself.** At the start of the run (and of a resume), do the same for the model you are running on: if a guide exists for your exact release, read its `## Orchestrator` section and follow it for the whole run.
+- **Record** under `MODEL GUIDES` in the DECISION LOG and `loop-state.md`, per role (orchestrator, reviewer, implementer): the resolved release and the guide applied, or `none` — noting when a guide exists only for another release of the family. Re-resolve on a resume; a new release may have shipped.
+- **Precedence.** A guide never overrides the Hard rules, this protocol, the Question protocol, or a return contract. On a conflict the plugin rule wins; note the conflict in `loop-state.md`.
+
+**Model check.** Every subagent report carries a `model:` line with the exact model it ran on. If it differs from the release the alias resolved to, that dispatch did not run on the chosen model (e.g. its safeguards rerouted it to an older one): do not use the report yet — ask via `AskUserQuestion`, per the Question protocol, whether to accept this dispatch's result or re-dispatch it. *(Under `--auto`: discard the report and re-dispatch once; if the mismatch repeats, stop and report — never assume past it.)* Record every mismatch and its resolution in `loop-state.md`.
 
 ## Question protocol — every question is self-contained
 
@@ -68,8 +77,8 @@ The DECISION LOG and the Loop Report follow the same convention: plain descripti
 
 Decide fresh-vs-resume from the input (after stripping flags):
 - If the remainder of `$ARGUMENTS` contains a new idea, this is a **fresh run** → go to Phase 0. (Do not resume a prior feature just because its state file exists.)
-- If it is empty or says to resume/continue and `.uroboros/intake.md` exists, the run was interrupted during intake: restore its ACTIVE FLAGS (overridden by any flags on this invocation), decision tree and logs, and continue Phase 0 from the recorded frontier.
-- Otherwise, if it is empty or says to resume/continue, resolve the active feature from `.specify/feature.json` and read `FEATURE_DIR/loop-state.md`. If it shows an **incomplete** run, restore the recorded ACTIVE FLAGS (overridden by any flags on this invocation) and resume from the last incomplete phase using the recorded DECISION LOG and resolutions — do not restart from intake (resuming implement: follow the implement protocol's resume rule). If there is no incomplete state to resume, tell the user there is nothing to resume and ask for an idea.
+- If it is empty or says to resume/continue and `.uroboros/intake.md` exists, the run was interrupted during intake: restore its ACTIVE FLAGS (overridden by any flags on this invocation), decision tree and logs, apply your own model guide (Model/effort protocol), and continue Phase 0 from the recorded frontier.
+- Otherwise, if it is empty or says to resume/continue, resolve the active feature from `.specify/feature.json` and read `FEATURE_DIR/loop-state.md`. If it shows an **incomplete** run, restore the recorded ACTIVE FLAGS (overridden by any flags on this invocation), re-resolve the MODEL GUIDES per the Model/effort protocol, and resume from the last incomplete phase using the recorded DECISION LOG and resolutions — do not restart from intake (resuming implement: follow the implement protocol's resume rule). If there is no incomplete state to resume, tell the user there is nothing to resume and ask for an idea.
 
 ## Spec-kit compatibility check (fresh runs and resumes)
 
@@ -89,7 +98,7 @@ Goal mode (`--goal`) skips this section — it does not use spec-kit.
 
 **Intake draft on disk.** No `FEATURE_DIR` exists until Phase 0.5, so intake writes to `.uroboros/intake.md` instead: the idea, ACTIVE FLAGS, the decision tree (settled / open / deferred nodes), the DECISION LOG, the ASSUMPTION LOG and the DEFERRED list. Create it after step 2 and rewrite it after every round. Phase 0.5 copies its sections into `loop-state.md` and deletes it.
 
-1. Read the idea. If it references files (e.g. `@specs/.../something.md`), read them.
+1. Apply your own model guide, if one exists for your exact release, per the Model/effort protocol (Model guides) — it governs how you run intake too. Read the idea. If it references files (e.g. `@specs/.../something.md`), read them.
 2. **Blind-spot pass.** Before interrogating, explore the codebase around the idea (Grep/Glob/Read) and surface the user's **unknown unknowns**: prior work in the same area, existing invariants or conventions the idea touches, and decisions the idea silently implies that the user has probably not considered. Turn what you find into questions in step 3 — the point of intake is to surface decisions before they get expensive, not to fill a checklist.
 3. **Build the decision tree.** Map every open decision and the decisions that hang off it: goal/why, users/roles, in/out scope for v1 with explicit **non-goals**, key entities/data, what "done" means, hard constraints, **failure behavior** (what happens on error, invalid input, missing data, concurrent or repeated actions), **edge cases** (empty, first-time, limits, permissions revoked mid-flow) — plus everything the blind-spot pass surfaced. Do **not** choose a tech stack (that is plan's job). **Too big for one run?** If the tree holds several features that could ship independently, ask the user whether to split the idea and which slice this run carries; the rest goes to the non-goals as future runs. *(Under `--auto`: take the smallest coherent slice, record `A<n>`.)*
 4. **Interrogate in rounds** with `AskUserQuestion` (questions in the user's language, per the Question protocol). A round is the **frontier**: every decision whose prerequisites are already settled — nothing else. A question whose answer hinges on another question still open belongs to a later round, never the same one. Within the frontier, **ask first what would change the architecture or the data model**; split a frontier larger than 4 across consecutive calls. After each round, update the tree and `.uroboros/intake.md`, recompute the frontier, and ask the next round; later rounds must ask what earlier answers unblocked, not a pre-written list. Intake ends when the frontier is empty: every branch visited, nothing silently assumed.
@@ -136,9 +145,10 @@ For **each** phase:
 - `FEATURE_DIR:` and the absolute paths of the artifacts it must read (resolve from `.specify/feature.json`). For implement, also run `git diff --name-only` / `git diff --stat` and pass the changed-file list.
 - `DECISION LOG:` the live summary of everything the user has already decided.
 - For implement: the **gate result** from A2 (pass/fail + any failing output).
+- `MODEL GUIDE:` the reviewer section of the guide for its resolved release, verbatim — only if one applies (Model/effort protocol).
 - Instruction: "Read the state file first; interrogate per your profile; CLEAN requires evidence; do not re-report anything already resolved in the state file, DECISION LOG, or ASSUMPTION LOG."
 
-**C. Parse B's report.**
+**C. Parse B's report.** Run the Model check on its `model:` line first.
 - If `status: CLEAN` *with a satisfactory `evidence` block* (and, for implement, a green gate) → go to E.
 - Else collect `findings` (and `risks` for plan/implement), plus any gate failure from A2.
 

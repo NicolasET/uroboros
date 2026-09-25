@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.10.0 — 2026-09-25
+
+- **Model guides.** Curated, per-release prompting guidance in `references/model-guides/<family>-<version>.md`, one section per role. Once a subagent's model is settled, the orchestrator resolves the family alias to the exact release and pastes that release's role section as a `MODEL GUIDE:` block into every dispatch; it also follows the `## Orchestrator` section of the guide for its own release. A guide is applied only to the exact release it was written for, never overrides the Hard rules, the Question protocol or a return contract, and is re-resolved on resume. Applied guides are recorded under `MODEL GUIDES` in `loop-state.md` and listed in the Loop Report.
+- **First guide: Opus 5.5**, distilled from [Getting the most out of Opus 5.5](https://claude.dev/blog/getting-the-most-out-of-opus-5-5/): whole task per dispatch with an explicit "Done means" line for the implementer, no "think carefully" and no requests to reproduce internal reasoning (a safeguard trigger), a concrete avoid-list at intake for UI ideas, merge-blocking-only implement reviews with file:line and how to show each failure, and an implementer that keeps going unless it needs a product decision or faces something destructive.
+- **Model check.** `LOOP-REVIEW-FINDINGS` and `IMPLEMENTER-REPORT` gain a `model:` line (additive contract change). A report whose model differs from the resolved release — e.g. a safeguard reroute to an older model — is not used until the user accepts it or asks for a re-dispatch; under `--auto` it is re-dispatched once, then the run stops and reports.
+
 ## 0.9.1 — 2026-09-22
 
 - **Model choices without version numbers.** The reviewer/implementer model question offers families (Fable, Opus, Sonnet — the latest release of each) instead of pinned versions that went stale (Fable 5, Opus 4.8). Dispatches pass the family alias, which resolves to the newest release; an exact version named via "Other" is recorded as given and dispatched by its family. Agent frontmatter fallbacks are now `model: opus` (implementer) and `model: fable` (reviewer); README flag examples use `sonnet:high` / `fable:max`.

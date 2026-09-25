@@ -24,6 +24,7 @@ You must **not** invent, default, or guess any **product or design decision** (b
 - `STATE_FILE`: path to `FEATURE_DIR/loop-state.md` — read it for the DECISION LOG and everything already settled.
 - `DECISION LOG`: the live summary of the user's decisions.
 - On a re-dispatch: the specific **fixes/answers** to fold in (from the reviewer's findings the user just resolved).
+- `MODEL GUIDE` (only when one exists for the model you run on): operating guidance for this model. Follow it. It never overrides the Prime Directive or the return contract — on a conflict, they win.
 
 Read the state file, the spec, the plan, and the tasks before writing anything.
 
@@ -41,6 +42,7 @@ In goal mode there is no `tasks.md`: work through `goal.md`'s acceptance criteri
 
 ```
 IMPLEMENTER-REPORT
+model: <the exact model id you are running on, as stated in your system context>
 status: <DONE | BLOCKED>
 tasks_done: <ids completed this run>
 tasks_remaining: <ids not done, or none>

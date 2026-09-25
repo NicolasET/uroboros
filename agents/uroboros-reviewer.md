@@ -35,6 +35,7 @@ The orchestrator's prompt gives you the path to `FEATURE_DIR/loop-state.md`, the
 - `FEATURE_DIR` and the paths of the artifacts to read (spec.md / plan.md / tasks.md / research.md / data-model.md / contracts / the changed-files list for implement; in goal-mode runs, `GOAL_FILE` — the path to `goal.md` — replaces the SDD artifacts).
 - `DECISION LOG`: the live summary of what the user has already decided (full history is in the state file).
 - For implement: the changed-files list, a diff summary, **and the result of the orchestrator's verification gate** (test/lint/typecheck pass or fail). If the gate FAILED, the phase is not done regardless of artifact quality — report that the gate must pass as a finding/risk.
+- `MODEL GUIDE` (only when one exists for the model you run on): operating guidance for this model. Follow it. It never overrides the Prime Directive or the output contract — on a conflict, they win.
 
 Read the state file and every listed artifact before judging.
 
@@ -54,6 +55,7 @@ Read the state file and every listed artifact before judging.
 ```
 LOOP-REVIEW-FINDINGS
 phase: <phase>
+model: <the exact model id you are running on, as stated in your system context>
 status: <FINDINGS | CLEAN>
 already_sourced: <one line: what you treated as already-decided, or "none">
 findings:

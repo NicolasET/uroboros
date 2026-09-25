@@ -22,11 +22,11 @@ Your obligations as orchestrator:
 
 - **Create** the marker in G2: `{"feature": "<slug>", "dir": ".uroboros/<slug>", "status": "active", "rounds_used": 0, "relaunches": 0, "rounds_max": <--rounds value, default 3>}`.
 - **Set a terminal `status`** — `"complete"` when the run closes (G5), `"stopped"` when you stop deliberately (round cap exhausted, unrecoverable error, user told you to stop). An `"active"` marker left behind keeps relaunching the session — never end a goal run without updating it.
-- When the hook relaunches you mid-run, treat it as a **resume**: re-read `active-run.json` and `loop-state.md` and continue from the recorded point. A fresh `/uroboros:run --goal` with no idea resumes the same way if `active-run.json` shows an active run — this replaces the Phase −1 check. With no active run but a `.uroboros/intake.md` draft, the run was interrupted during intake: restore it and continue G1 from the recorded frontier.
+- When the hook relaunches you mid-run, treat it as a **resume**: re-read `active-run.json` and `loop-state.md`, re-resolve the MODEL GUIDES per the Model/effort protocol, and continue from the recorded point. A fresh `/uroboros:run --goal` with no idea resumes the same way if `active-run.json` shows an active run — this replaces the Phase −1 check. With no active run but a `.uroboros/intake.md` draft, the run was interrupted during intake: restore it, apply your own model guide, and continue G1 from the recorded frontier.
 
 ## G1 — Intake (idea → approved goal.md)
 
-Run Phase 0's intake exactly as written in the command (intake draft in `.uroboros/intake.md`, blind-spot pass, decision tree, frontier rounds, facts looked up rather than asked, invited references, shared-understanding check, run-mode question rules) — but the deliverable is a draft **`goal.md`** instead of a specify prompt. `goal.md` has no clarification phase after it, so a **DEFERRED** decision cannot pass through: before the draft, put each one back to the user with narrower, concrete options, or — if they choose so — move it to **Out of scope**. Nothing deferred remains when `goal.md` is approved.
+Run Phase 0's intake exactly as written in the command (your own model guide applied first, intake draft in `.uroboros/intake.md`, blind-spot pass, decision tree, frontier rounds, facts looked up rather than asked, invited references, shared-understanding check, run-mode question rules) — but the deliverable is a draft **`goal.md`** instead of a specify prompt. `goal.md` has no clarification phase after it, so a **DEFERRED** decision cannot pass through: before the draft, put each one back to the user with narrower, concrete options, or — if they choose so — move it to **Out of scope**. Nothing deferred remains when `goal.md` is approved.
 
 - **Goal condition** — one measurable end state with a **stated check**, verifiable from command output or observable behavior (e.g. "`npm test` exits 0 and `GET /listings/:id` returns `paused: true` after the pause call"), not from intent.
 - **Acceptance criteria** — numbered `AC-1`, `AC-2`, …; each measurable and user-sourced. These are what the reviewer demands evidence for.
@@ -44,15 +44,15 @@ Show the draft and get approval via `AskUserQuestion` (Approve / Edit; self-appr
 
 ## G3 — Review the goal artifact
 
-Dispatch the reviewer (chosen model/effort, foreground) with `PHASE: goal`, `RUN_MODE`, `STATE_FILE`, the path to `goal.md`, and the DECISION LOG. Relay findings and fold answers per steps C–D of the loop, max `--rounds` rounds. Do not start implementation before CLEAN-with-evidence on `goal.md`.
+Dispatch the reviewer (chosen model/effort, foreground) with `PHASE: goal`, `RUN_MODE`, `STATE_FILE`, the path to `goal.md`, the DECISION LOG, and its `MODEL GUIDE:` block if one applies. Every subagent dispatch in goal mode carries its role's `MODEL GUIDE:` block when one applies, and every report goes through the Model check before it is used (Model/effort protocol). Relay findings and fold answers per steps C–D of the loop, max `--rounds` rounds. Do not start implementation before CLEAN-with-evidence on `goal.md`.
 
 ## G4 — The goal loop (replaces phases 1–6)
 
 **BLOCKING — settle the implementer's model/effort per the Model/effort protocol** (flag, question, or `--auto` fallback). Then loop; at the start of each round increment `rounds_used` in `active-run.json` and open a `### Round <n>` record in `loop-state.md`:
 
-1. **Implement.** Dispatch `uroboros-implementer` (chosen model/effort, foreground) with `GOAL_FILE` (the path to `goal.md`) in place of the spec/plan/tasks paths, plus `STATE_FILE`, the DECISION LOG, and — on a re-dispatch — the fixes/answers to fold. Handle `BLOCKED` exactly as in `implement-protocol.md`. You never hand-edit code; every fold goes through the implementer.
+1. **Implement.** Dispatch `uroboros-implementer` (chosen model/effort, foreground) with `GOAL_FILE` (the path to `goal.md`) in place of the spec/plan/tasks paths, plus `STATE_FILE`, the DECISION LOG, its `MODEL GUIDE:` block if one applies, and — on a re-dispatch — the fixes/answers to fold. Handle `BLOCKED` exactly as in `implement-protocol.md`. You never hand-edit code; every fold goes through the implementer.
 2. **Gate.** Run the real verification commands (discover once, record in `loop-state.md`, reuse — same as step A2). A red gate means the round is not done.
-3. **Review.** Dispatch the reviewer with `PHASE: goal-implement`, the changed-file list (`git diff --name-only` / `--stat`), the gate result, `GOAL_FILE`, `STATE_FILE`, and the DECISION LOG. CLEAN requires evidence per acceptance criterion (`AC-<n>`) plus a green gate.
+3. **Review.** Dispatch the reviewer with `PHASE: goal-implement`, the changed-file list (`git diff --name-only` / `--stat`), the gate result, `GOAL_FILE`, `STATE_FILE`, the DECISION LOG, and its `MODEL GUIDE:` block if one applies. CLEAN requires evidence per acceptance criterion (`AC-<n>`) plus a green gate.
 4. **Fold.** Relay findings/risks per the run mode; record every resolution; re-dispatch the implementer with them; re-run the gate; re-dispatch the reviewer.
 
 Exit the loop on CLEAN-with-evidence + green gate. If `rounds_max` is exhausted first, follow the command's failure handling: set `status: "stopped"` in `active-run.json`, record everything in `loop-state.md`, and surface the remaining items plainly (under `--auto`: stop and report — never assume past the cap).
