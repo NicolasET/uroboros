@@ -4,7 +4,7 @@ For the **implement** phase only, the maker is a dedicated subagent so it can ru
 
 ## Step A (implement)
 
-1. **BLOCKING — settle the implementer's model/effort per the Model/effort protocol.** If `--implementer=<model>:<effort>` was given, that is the user's answer — record it and skip the question. Otherwise ask, and do not dispatch the implementer until the user has answered *in this run* (under `--auto` with no flag: frontmatter fallback, recorded as an assumption). Record the choice in `loop-state.md`.
+1. **BLOCKING — settle the implementer's model/effort per the Model/effort protocol.** If `--implementer=<model>:<effort>` was given, that is the user's answer — record it and skip the question. Otherwise ask, and do not dispatch the implementer until the user has answered *in this run* (under `--auto` the choice was already settled at the start of the run). Record the choice in `loop-state.md`.
 2. Dispatch the `uroboros-implementer` subagent in the foreground with the chosen model passed explicitly on the Agent call and the chosen effort, and wait for its `IMPLEMENTER-REPORT`. In its prompt put: `FEATURE_DIR`, the paths to `spec.md`/`plan.md`/`tasks.md` (+ data-model/contracts if present), `STATE_FILE`, the `DECISION LOG`, and — only if one applies — the implementer section of the guide for its resolved release as a verbatim `MODEL GUIDE:` block (Model/effort protocol). Every re-dispatch below carries the same block.
 3. Read its `IMPLEMENTER-REPORT`. Run the Model check on its `model:` line first.
    - **Log deviations:** append every deviation the implementer reports in `notes` to `loop-state.md` under this phase's `### Deviations` (one line each, with the round number). Deviations forced by reality are exactly what the Loop Report's candidate rules are mined from — do not let them evaporate with the subagent's context.
@@ -14,7 +14,7 @@ Then proceed to **A2** (you run the real verification gate) and **B** (dispatch 
 
 ## The fold (step D) for implement
 
-You do not hand-edit the code yourself. Instead, **re-dispatch the `uroboros-implementer`** (same chosen model/effort) with the user's answers to the reviewer's findings and any gate failures, so all code is written by the strong maker. Log any new deviations from its report as in step 3. Then re-run the gate and re-dispatch the reviewer. Loop until CLEAN-with-evidence + green gate (max 3 rounds), then run the convergence gate below.
+You do not hand-edit the code yourself. Instead, **re-dispatch the `uroboros-implementer`** (same chosen model/effort) with the user's answers to the reviewer's findings and any gate failures, so all code is written by the strong maker. Log any new deviations from its report as in step 3. Then re-run the gate and re-dispatch the reviewer. Loop until CLEAN-with-evidence + green gate (round cap per step D — none under `--auto` without `--rounds`), then run the convergence gate below.
 
 ## The convergence gate (closes the phase)
 

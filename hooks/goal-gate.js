@@ -42,9 +42,12 @@ process.stdin.on('end', () => {
     return;
   }
 
+  // rounds_max: null = uncapped (--auto without --rounds); the run relaunches
+  // until the orchestrator sets a terminal status. Missing or invalid = 3.
+  const uncapped = run.rounds_max === null;
   const max = Number.isFinite(run.rounds_max) ? run.rounds_max : 3;
   const relaunches = Number.isFinite(run.relaunches) ? run.relaunches : 0;
-  if (relaunches >= max) {
+  if (!uncapped && relaunches >= max) {
     allow();
     return;
   }
@@ -65,7 +68,7 @@ process.stdin.on('end', () => {
       decision: 'block',
       reason:
         `Uroboros goal run "${run.feature || 'unknown'}" is still active ` +
-        `(relaunch ${run.relaunches}/${max}). Read ${dir}/loop-state.md and ` +
+        `(relaunch ${run.relaunches}/${uncapped ? 'uncapped' : max}). Read ${dir}/loop-state.md and ` +
         `.uroboros/active-run.json, then resume the goal loop per the uroboros ` +
         `goal protocol (references/goal-protocol.md). When the goal is met ` +
         `(reviewer CLEAN with evidence + green verification gate) set status ` +

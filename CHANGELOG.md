@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.11.0 — 2026-09-26
+
+- **`--auto` asks the models up front.** An `--auto` run has no later chance to ask, so the reviewer and implementer model/effort not given by `--reviewer=`/`--implementer=` are asked in one `AskUserQuestion` batch at the very start — before the compat check and intake (on a resume, only choices not yet recorded). It is the only question an `--auto` run makes. The agents' frontmatter fallback is now used only when `AskUserQuestion` is unavailable (e.g. headless `-p`), recorded as an assumption.
+- **`--auto` has no round cap by default.** Each phase loops until the reviewer is CLEAN with evidence (plus a green gate for implement) instead of stopping after 3 rounds; in goal mode the marker is written with `rounds_max: null` and the Stop hook relaunches until the run is `complete` or `stopped`. An explicit `--rounds=N` is still honored: when exhausted under `--auto`, a design phase advances with the last fold's unchecked resolutions recorded as `unverified` assumptions (listed first in the Loop Report's ledger), while implement and goal rounds stop and report.
+
 ## 0.10.0 — 2026-09-25
 
 - **Model guides.** Curated, per-release prompting guidance in `references/model-guides/<family>-<version>.md`, one section per role. Once a subagent's model is settled, the orchestrator resolves the family alias to the exact release and pastes that release's role section as a `MODEL GUIDE:` block into every dispatch; it also follows the `## Orchestrator` section of the guide for its own release. A guide is applied only to the exact release it was written for, never overrides the Hard rules, the Question protocol or a return contract, and is re-resolved on resume. Applied guides are recorded under `MODEL GUIDES` in `loop-state.md` and listed in the Loop Report.

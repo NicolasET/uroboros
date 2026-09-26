@@ -75,11 +75,11 @@ By default Uroboros asks about everything. Flags let you delegate — but a supp
 
 | Flag | Effect |
 |---|---|
-| `--auto` | No questions at all. Every decision (including intake approval) is resolved conservatively and recorded as an assumption. |
+| `--auto` | One question batch at the very start — the reviewer and implementer model/effort not given by flag — then no questions at all. Every other decision (including intake approval) is resolved conservatively and recorded as an assumption. Review rounds are uncapped: each phase loops until the reviewer is clean (and, for implement, the gate is green), unless you pass `--rounds`. |
 | `--only-business` | Only product/business questions reach you; purely technical choices (no user-visible difference) become recorded assumptions. |
 | `--reviewer=<model>:<effort>` | Pre-answers the reviewer model/effort question (e.g. `sonnet:high`). |
 | `--implementer=<model>:<effort>` | Same for the implementer. |
-| `--rounds=N` | Max review rounds per phase (default 3). In goal mode, also caps the Stop hook's automatic relaunches. |
+| `--rounds=N` | Max review rounds per phase (default 3; no cap under `--auto`). In goal mode, also caps the Stop hook's automatic relaunches. Under `--auto`, an exhausted cap lets a design phase advance with its last unchecked resolutions flagged as unverified assumptions; implement stops and reports. |
 | `--goal` | **Goal mode** — replaces the SDD pipeline with a completion condition (see below). Combines freely with every flag above. |
 
 The zero-inference rule survives intact: the ban was always on inferring *silently*. The reviewer's audit shifts with the mode — a recorded assumption is sourced-by-policy; an unrecorded one is still a finding.
@@ -96,14 +96,14 @@ For small tasks where full SDD is overkill, or repos where spec-kit isn't instal
 What changes and what doesn't:
 
 - **Intake is identical** (blind-spot pass, frontier rounds, references, shared-understanding check; a deferred decision must be settled or moved out of scope, since there is no clarify phase) — but it produces a `goal.md` (measurable completion condition + numbered acceptance criteria + constraints) instead of a specify prompt, and the reviewer audits it before any code is written.
-- **The work runs in rounds** — implementer → real verification gate → reviewer — until the reviewer returns `CLEAN` with evidence per acceptance criterion **and** the gate is green, capped by `--rounds`.
-- **The plugin's Stop hook keeps the run alive across turns**, replicating `/goal`: while `.uroboros/active-run.json` records an active run, ending a turn relaunches the loop instead of returning control (also capped by `--rounds`). You never re-invoke the command to resume.
+- **The work runs in rounds** — implementer → real verification gate → reviewer — until the reviewer returns `CLEAN` with evidence per acceptance criterion **and** the gate is green, capped by `--rounds` (uncapped under `--auto` unless `--rounds` is given).
+- **The plugin's Stop hook keeps the run alive across turns**, replicating `/goal`: while `.uroboros/active-run.json` records an active run, ending a turn relaunches the loop instead of returning control (also capped by `--rounds`, and likewise uncapped under `--auto`). You never re-invoke the command to resume.
 - **Everything else survives**: maker/checker split, runtime-chosen models, the assumption ledger under `--auto`/`--only-business`, the hard gate, the Loop Report, and the no-commit policy. State lives in `.uroboros/<slug>/` instead of the spec-kit feature directory.
 
 ## Configuration
 
-- **Reviewer model/effort:** chosen at runtime, once per run — via the `--reviewer=` flag or a blocking question at intake — it governs every reviewer dispatch of that run. The frontmatter values in `agents/uroboros-reviewer.md` are only a fallback. The reviewer is the quality gate: pick strong, and downgrade effort before downgrading the model if cost bites.
-- **Implementer model/effort:** chosen at runtime, every run — via the `--implementer=` flag or the blocking question. The frontmatter values are only a fallback.
+- **Reviewer model/effort:** chosen at runtime, once per run — via the `--reviewer=` flag or a blocking question at intake (under `--auto`, at the very start of the run) — it governs every reviewer dispatch of that run. The frontmatter values in `agents/uroboros-reviewer.md` are only a fallback for sessions that cannot ask (e.g. headless `-p`). The reviewer is the quality gate: pick strong, and downgrade effort before downgrading the model if cost bites.
+- **Implementer model/effort:** chosen at runtime, every run — via the `--implementer=` flag or the blocking question (right before implement; under `--auto`, at the very start of the run). The frontmatter values are only a fallback for sessions that cannot ask.
 - **Model guides:** when a model release ships with its own prompting guidance (e.g. [Getting the most out of Opus 5.5](https://claude.dev/blog/getting-the-most-out-of-opus-5-5/)), the plugin carries it distilled per role in `references/model-guides/<family>-<version>.md`. Each role — orchestrator, reviewer, implementer — gets the guide for the exact release it runs on, never one written for another release. Every subagent report states the model it actually ran on; a mismatch (e.g. a safeguard reroute to an older model) is put to you before the report is used. The Loop Report lists which guides were applied.
 - **Commit policy:** Uroboros never commits. All changes are left for you, by design.
 - **Spec-kit hooks:** optional hooks (auto-commit, agent-context refresh) are declined without asking and listed in the Loop Report for you to run by hand; the branch-creation hook is skipped because the run already created the branch; any other mandatory hook is executed by the orchestrator.
