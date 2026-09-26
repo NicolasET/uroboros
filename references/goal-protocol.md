@@ -12,17 +12,18 @@ Goal mode replaces the six-phase SDD pipeline with a **completion condition**: i
 
 ## Stop-hook contract — how the run survives turn ends
 
-The plugin ships a Stop hook (`hooks/goal-gate.js`) that fires whenever you end a turn. It reads `.uroboros/active-run.json`:
+The plugin ships a Stop hook (`hooks/goal-gate.js`) that fires whenever any session in the repo ends a turn. It reads `.uroboros/active-run.json`:
 
 - File absent, unparsable, or `status` ≠ `"active"` → it allows the stop (zero cost in non-goal sessions).
-- `status: "active"` and `relaunches` < `rounds_max` (or `rounds_max` is `null`) → it **blocks the stop** and relaunches you with a reason pointing at the state files. The hook increments `relaunches` itself.
+- `session_id` missing or different from the session that is stopping → it allows the stop. Only the session that owns the run is ever kept alive; a marker left behind by a crashed run never traps another session.
+- `status: "active"`, the owning session, and `relaunches` < `rounds_max` (or `rounds_max` is `null`) → it **blocks the stop** and relaunches you with a reason pointing at the state files. The hook increments `relaunches` itself.
 - `relaunches` ≥ `rounds_max` → it allows the stop. A `null` `rounds_max` never reaches this: the run relaunches until you set a terminal `status`.
 
 Your obligations as orchestrator:
 
-- **Create** the marker in G2: `{"feature": "<slug>", "dir": ".uroboros/<slug>", "status": "active", "rounds_used": 0, "relaunches": 0, "rounds_max": <--rounds value; default 3, or null under --auto>}`. `null` means uncapped — the `--auto` default (step D).
+- **Create** the marker in G2: `{"feature": "<slug>", "dir": ".uroboros/<slug>", "session_id": "<this session's id, from the --goal row of the command>", "status": "active", "rounds_used": 0, "relaunches": 0, "rounds_max": <the round cap per step D, or null when step D sets none>}`.
 - **Set a terminal `status`** — `"complete"` when the run closes (G5), `"stopped"` when you stop deliberately (round cap exhausted, unrecoverable error, user told you to stop). An `"active"` marker left behind keeps relaunching the session — never end a goal run without updating it.
-- When the hook relaunches you mid-run, treat it as a **resume**: re-read `active-run.json` and `loop-state.md`, re-resolve the MODEL GUIDES per the Model/effort protocol, and continue from the recorded point. A fresh `/uroboros:run --goal` with no idea resumes the same way if `active-run.json` shows an active run — this replaces the Phase −1 check. With no active run but a `.uroboros/intake.md` draft, the run was interrupted during intake: restore it, apply your own model guide, and continue G1 from the recorded frontier.
+- When the hook relaunches you mid-run, treat it as a **resume**: re-read `active-run.json` and `loop-state.md`, re-resolve the MODEL GUIDES per the Model/effort protocol, and continue from the recorded point. A fresh `/uroboros:run --goal` with no idea resumes the same way if `active-run.json` shows an active run — first write this session's id into its `session_id` so the hook keeps this session alive from now on. This replaces the Phase −1 check. With no active run but a `.uroboros/intake.md` draft, the run was interrupted during intake: restore it, apply your own model guide, and continue G1 from the recorded frontier.
 
 ## G1 — Intake (idea → approved goal.md)
 
@@ -40,22 +41,22 @@ Show the draft and get approval via `AskUserQuestion` (Approve / Edit; self-appr
 
 - Create a feature branch with plain git (`git checkout -b goal/<slug>`); if git is unavailable, continue branchless. Do not use `speckit-git-feature`.
 - Create `.uroboros/<slug>/goal.md` and `loop-state.md` (ACTIVE FLAGS, approved goal, DECISION LOG so far, ASSUMPTION LOG so far — copied from `.uroboros/intake.md` — empty per-round section). Delete `.uroboros/intake.md` once the copy is written.
-- Write `.uroboros/active-run.json` per the contract above. From this point the hook keeps the session alive until you set a terminal status.
+- Write `.uroboros/active-run.json` per the contract above. From this point the hook keeps this session alive until you set a terminal status.
 
 ## G3 — Review the goal artifact
 
-Dispatch the reviewer (chosen model/effort, foreground) with `PHASE: goal`, `RUN_MODE`, `STATE_FILE`, the path to `goal.md`, the DECISION LOG, and its `MODEL GUIDE:` block if one applies. Every subagent dispatch in goal mode carries its role's `MODEL GUIDE:` block when one applies, and every report goes through the Model check before it is used (Model/effort protocol). Relay findings and fold answers per steps C–D of the loop, with the round cap of step D (under `--auto` with an explicit `--rounds`, an exhausted cap here advances like a design phase). Do not start implementation before CLEAN-with-evidence on `goal.md`.
+Dispatch the reviewer (the variant of the chosen effort, the chosen model, waited for — hard rule 7) with its `INSTRUCTIONS:` line (step B), `PHASE: goal`, `RUN_MODE`, `STATE_FILE`, the path to `goal.md`, the DECISION LOG, and its `MODEL GUIDE:` block if one applies. Every subagent dispatch in goal mode carries its role's `INSTRUCTIONS:` line and, when one applies, its `MODEL GUIDE:` block, and every report goes through the Model check before it is used (Model/effort protocol). Relay findings and fold answers per steps C–D of the loop, with the round cap and repeated items of step D (`goal.md` counts as a design phase there). Do not start implementation before CLEAN-with-evidence on `goal.md`.
 
 ## G4 — The goal loop (replaces phases 1–6)
 
 **BLOCKING — settle the implementer's model/effort per the Model/effort protocol** (flag or question; under `--auto` it was settled at the start of the run). Then loop; at the start of each round increment `rounds_used` in `active-run.json` and open a `### Round <n>` record in `loop-state.md`:
 
-1. **Implement.** Dispatch `uroboros-implementer` (chosen model/effort, foreground) with `GOAL_FILE` (the path to `goal.md`) in place of the spec/plan/tasks paths, plus `STATE_FILE`, the DECISION LOG, its `MODEL GUIDE:` block if one applies, and — on a re-dispatch — the fixes/answers to fold. Handle `BLOCKED` exactly as in `implement-protocol.md`. You never hand-edit code; every fold goes through the implementer.
+1. **Implement.** Dispatch the implementer (the variant of the chosen effort, the chosen model, waited for) with its `INSTRUCTIONS:` line (implement protocol, step 2), `GOAL_FILE` (the path to `goal.md`) in place of the spec/plan/tasks paths, plus `STATE_FILE`, the DECISION LOG, its `MODEL GUIDE:` block if one applies, and — on a re-dispatch — the fixes/answers to fold. Handle `BLOCKED` exactly as in `implement-protocol.md`. You never hand-edit code; every fold goes through the implementer.
 2. **Gate.** Run the real verification commands (discover once, record in `loop-state.md`, reuse — same as step A2). A red gate means the round is not done.
 3. **Review.** Dispatch the reviewer with `PHASE: goal-implement`, the changed-file list (`git diff --name-only` / `--stat`), the gate result, `GOAL_FILE`, `STATE_FILE`, the DECISION LOG, and its `MODEL GUIDE:` block if one applies. CLEAN requires evidence per acceptance criterion (`AC-<n>`) plus a green gate.
 4. **Fold.** Relay findings/risks per the run mode; record every resolution; re-dispatch the implementer with them; re-run the gate; re-dispatch the reviewer.
 
-Exit the loop on CLEAN-with-evidence + green gate. Under `--auto` without `--rounds` there is no cap: keep looping until then. If a cap is set and exhausted first, follow the command's failure handling: set `status: "stopped"` in `active-run.json`, record everything in `loop-state.md`, and surface the remaining items plainly (under `--auto`: stop and report — never assume past the cap).
+Exit the loop on CLEAN-with-evidence + green gate. Round cap and repeated items follow step D (the rounds here count as implement). If a cap is exhausted first, follow the command's failure handling: set `status: "stopped"` in `active-run.json`, record everything in `loop-state.md`, and surface the remaining items plainly.
 
 ## G5 — Close
 

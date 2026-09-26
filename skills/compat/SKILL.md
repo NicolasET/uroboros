@@ -14,7 +14,7 @@ You are auditing **the project in the current working directory** against Urobor
 
 Inputs (all under `${CLAUDE_PLUGIN_ROOT}` — the plugin root is the directory that contains `skills/`, `references/` and `.claude-plugin/`, i.e. two levels above this SKILL.md; resolve it once and do not look for `references/` inside `skills/compat/`):
 
-- `references/spec-kit-compat.json` — the contract: the baseline release and its snapshot (`baseline`), the supported range, version sources, the install manifest that hashes every installed skill (`install_manifest`), required/optional skills, files and markers, skill markers, hook directive shapes and the hook events a run triggers (`hook_directives.events_used`).
+- `references/spec-kit-compat.json` — the contract: the baseline release and its snapshot (`baseline`), the supported range, version sources, the install manifest that hashes every installed skill (`install_manifest`), required/audited/optional skills, files and markers, skill markers, hook directive shapes and the hook events a run triggers (`hook_directives.events_used`).
 - `references/spec-kit-compat.md` — the touchpoint table; its `#` numbers are the row ids below.
 - `<baseline.snapshot>/<skill>/SKILL.md` — the skill texts of the baseline release, plus `hashes.json`.
 
@@ -32,9 +32,9 @@ If `.specify/` does not exist in the working directory, say this is not a spec-k
 
 ## 3. Skills
 
-Rows: `2.1`–`2.6` for `skills.required` in contract order, `3` for `speckit-git-feature`, `4` for `speckit-converge`. Do the hashing and the `--stat` comparison for all eight skills in **one** shell invocation (a short loop or a `node -e` script), then open only the diffs that are not identical — not one skill per round trip. For each:
+Rows: `2.1`–`2.5` for `skills.required` in contract order, `2.6` for `speckit-implement` (`skills.audited`), `3` for `speckit-git-feature`, `4` for `speckit-converge`. Do the hashing and the `--stat` comparison for all eight skills in **one** shell invocation (a short loop or a `node -e` script), then open only the diffs that are not identical — not one skill per round trip. For each:
 
-1. Does `<skills_dir>/<skill>/SKILL.md` exist? Missing required → **MISSING** (the run cannot execute that phase). Missing optional → **ABSENT** (state the fallback from the contract).
+1. Does `<skills_dir>/<skill>/SKILL.md` exist? Missing required → **MISSING** (the run cannot execute that phase). Missing optional → **ABSENT** (state the fallback from the contract). Missing audited → **ABSENT** (no run impact: the run never invokes it; only the touchpoint 12 comparison is lost).
 2. **Local-edit check.** The contract's `install_manifest` file records the SHA-256 of every skill file as spec-kit wrote it. Hash the installed file as-is and with CRLF normalized to LF (`node -e` with `crypto`, or `sha256sum`); if neither matches the manifest entry, the file was **modified after install** — a formatter such as Prettier, or a hand edit — → status **LOCAL**. Skills the manifest does not list (extension skills such as `speckit-git-feature`) skip this step.
 3. Compare with `git diff --no-index --ignore-cr-at-eol --stat <snapshot file> <installed file>`. Identical → **OK**. Otherwise get the unified diff (same flags, without `--stat`) and classify every hunk:
    - **expected** — `.specify/scripts/...` path differences (script type `ps` vs `sh`); whitespace, blank lines, indentation; formatter output such as YAML frontmatter quote style (`"x"` ↔ `'x'`), escaped markdown characters (`\*`, `\_`), table pipe padding or realignment;
@@ -45,7 +45,7 @@ Rows: `2.1`–`2.6` for `skills.required` in contract order, `3` for `speckit-gi
 
 ## 4. Files, keys and markers
 
-Rows `5`, `7`, `9`, `10`, `11` (the contract's `files`, in that order). Exists? For JSON files, are the listed `keys` present? For templates, is every `markers` string present? Report **OK / MISSING / CHANGED** with the missing key or marker. A file flagged `absent_until_first_feature` that does not exist is **N/A** (fresh project, no feature yet), not MISSING.
+Rows from the contract's `files`: `5` `.specify/feature.json`, `7` `spec-template.md`, `9` `plan-template.md`, `10` `tasks-template.md`, `11` `.specify/memory/constitution.md`. (`.specify/extensions.yml` is row `6`, handled in section 5.) Exists? For JSON files, are the listed `keys` present? For templates, is every `markers` string present? Report **OK / MISSING / CHANGED** with the missing key or marker. A file flagged `absent_until_first_feature` that does not exist is **N/A** (fresh project, no feature yet), not MISSING.
 
 ## 5. Hooks
 

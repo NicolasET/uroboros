@@ -58,9 +58,11 @@
       "speckit-clarify",
       "speckit-plan",
       "speckit-tasks",
-      "speckit-analyze",
-      "speckit-implement"
+      "speckit-analyze"
     ],
+    "audited": {
+      "speckit-implement": "never invoked (the uroboros-implementer subagent replaces it), so its absence does not stop a run; snapshotted and diffed by /uroboros:compat because its checklist handling is touchpoint 12"
+    },
     "optional": {
       "speckit-git-feature": "feature-branch creation (git extension); absent => the run continues branchless",
       "speckit-converge": "convergence gate at the close of implement (spec-kit >= 0.11.2); absent => the gate is skipped and noted in loop-state.md"
@@ -73,7 +75,7 @@
       "used_by": ["skills/run/SKILL.md (Phase -1 resume, step B artifact paths)"]
     },
     ".specify/memory/constitution.md": {
-      "used_by": ["agents/uroboros-reviewer.md (analyze profile)", "references/loop-report.md (candidate rules)"]
+      "used_by": ["references/reviewer-instructions.md (analyze profile)", "references/loop-report.md (candidate rules)"]
     },
     ".specify/extensions.yml": {
       "keys": ["hooks"],
@@ -81,15 +83,15 @@
     },
     ".specify/templates/spec-template.md": {
       "markers": ["FR-001", "SC-001", "NEEDS CLARIFICATION"],
-      "used_by": ["agents/uroboros-reviewer.md (specify, tasks profiles)", "skills/run/SKILL.md (assumption mechanism, step D fold)"]
+      "used_by": ["references/reviewer-instructions.md (specify, tasks profiles)", "skills/run/SKILL.md (assumption mechanism, step D fold)"]
     },
     ".specify/templates/plan-template.md": {
       "markers": ["research.md", "data-model.md", "contracts/", "Constitution"],
-      "used_by": ["agents/uroboros-reviewer.md (plan profile)", "agents/uroboros-implementer.md (inputs)", "skills/run/SKILL.md (step B artifact paths)"]
+      "used_by": ["references/reviewer-instructions.md (plan profile)", "references/implementer-instructions.md (inputs)", "skills/run/SKILL.md (step B artifact paths)"]
     },
     ".specify/templates/tasks-template.md": {
       "markers": ["[P]"],
-      "used_by": ["agents/uroboros-reviewer.md (tasks profile)", "agents/uroboros-implementer.md (task order, [X] marking)"]
+      "used_by": ["references/reviewer-instructions.md (tasks profile)", "references/implementer-instructions.md (task order, [X] marking)"]
     }
   },
   "skill_markers": {

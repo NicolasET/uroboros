@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 // Stop hook for Uroboros goal mode (--goal). Replicates /goal semantics:
-// while .uroboros/active-run.json records an active goal run, block the stop
-// so the session relaunches and the orchestrator resumes from loop-state.md.
-// Allows the stop (exit 0, no output) on ANY doubt — this hook must never
-// trap a session it cannot account for.
+// while .uroboros/active-run.json records an active goal run owned by the
+// stopping session, block the stop so the session relaunches and the
+// orchestrator resumes from loop-state.md. Every other session in the repo
+// stops normally. Allows the stop (exit 0, no output) on ANY doubt — this
+// hook must never trap a session it cannot account for.
 
 'use strict';
 
@@ -21,11 +22,14 @@ process.stdin.on('data', (chunk) => {
 });
 process.stdin.on('end', () => {
   let cwd = process.cwd();
+  let sessionId = '';
   try {
     const input = JSON.parse(raw);
     if (typeof input.cwd === 'string' && input.cwd) cwd = input.cwd;
+    if (typeof input.session_id === 'string') sessionId = input.session_id;
   } catch (_) {
-    // stdin was not JSON — fall back to process cwd
+    // stdin was not JSON — fall back to process cwd; no session id means
+    // the owner check below allows the stop
   }
 
   const markerPath = path.join(cwd, '.uroboros', 'active-run.json');
@@ -42,8 +46,17 @@ process.stdin.on('end', () => {
     return;
   }
 
-  // rounds_max: null = uncapped (--auto without --rounds); the run relaunches
-  // until the orchestrator sets a terminal status. Missing or invalid = 3.
+  // Only the session that owns the run is kept alive. A marker without a
+  // session_id (written before 0.12.0) or left behind by a crashed run
+  // never blocks another session.
+  if (!sessionId || run.session_id !== sessionId) {
+    allow();
+    return;
+  }
+
+  // rounds_max: null = uncapped (--auto without --rounds); the owning session
+  // relaunches until the orchestrator sets a terminal status. Missing or
+  // invalid = 3.
   const uncapped = run.rounds_max === null;
   const max = Number.isFinite(run.rounds_max) ? run.rounds_max : 3;
   const relaunches = Number.isFinite(run.relaunches) ? run.relaunches : 0;

@@ -6,7 +6,7 @@
     {
       "name": "uroboros",
       "source": "./",
-      "description": "Zero-inference loop engineering for GitHub Spec Kit: orchestrator + independent reviewer + runtime-chosen implementer."
+      "description": "Zero-inference loop engineering for GitHub Spec Kit: orchestrator + independent reviewer + runtime-chosen implementer, goal mode (--goal) and a spec-kit compatibility audit (/uroboros:compat)."
     }
   ]
 }

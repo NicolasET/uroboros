@@ -39,7 +39,7 @@ Everything the plugin assumes about spec-kit, where that assumption lives in the
 | # | Spec-kit side | Plugin side | How to verify |
 |---|---|---|---|
 | 1 | Claude integration installs **skills** by default, hyphenated names under `.claude/skills/speckit-*`, invoked as `/speckit-<name>` | `skills/run/SKILL.md` phase table (1–5), Phase 0.5; README prerequisites | `ls .claude/skills \| grep speckit-` |
-| 2 | Six core skills: `speckit-specify`, `-clarify`, `-plan`, `-tasks`, `-analyze`, `-implement` | Phase table; the run stops if one is missing | compat check at run start; `/uroboros:compat` |
+| 2 | Five required skills: `speckit-specify`, `-clarify`, `-plan`, `-tasks`, `-analyze`; plus `speckit-implement`, audited only — the implementer subagent replaces it, so the run never invokes it (it is diffed for touchpoint 12) | Phase table; the run stops if a required skill is missing | compat check at run start; `/uroboros:compat` |
 | 3 | `speckit-git-feature` (git extension, optional; extension declares `requires: speckit_version: ">=0.2.0"`) | Phase 0.5 (branch creation); absent → branchless | `specify extension list` |
 | 4 | `speckit-converge` (core since 0.11.2): assesses code vs spec/plan/tasks, **append-only** `## Phase N: Convergence` tasks or "Converged" with `tasks.md` untouched; must run only after tasks were implemented | `references/implement-protocol.md` convergence gate + resume rule; reviewer implement profile | marker check; snapshot diff |
 | 5 | `.specify/feature.json` → `feature_directory` (written by the create-new-feature script on the first specify; absent in a fresh project) | Phase −1 resume; step B artifact paths | `cat .specify/feature.json` |

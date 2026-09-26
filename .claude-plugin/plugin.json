@@ -1,8 +1,8 @@
 {
   "name": "uroboros",
   "displayName": "Uroboros",
-  "version": "0.11.0",
-  "description": "Invoke with /uroboros:run. Zero-inference loop engineering for GitHub Spec Kit. One orchestrator drives the full SDD pipeline (specify → implement) end-to-end; an independent reviewer subagent interrogates every phase artifact and turns each inferred decision into an explicit question to the user; a dedicated implementer subagent writes the code on a model you choose at runtime. Flags (--auto, --only-business) can suppress questions — suppressed questions become recorded, auditable assumptions, never silent guesses. The loop that eats its own tail — and never guesses.",
+  "version": "0.12.0",
+  "description": "Invoke with /uroboros:run. Zero-inference loop engineering for GitHub Spec Kit. One orchestrator drives the full SDD pipeline (specify → implement) end-to-end; an independent reviewer subagent interrogates every phase artifact and turns each inferred decision into an explicit question to the user; a dedicated implementer subagent writes the code on a model and effort you choose at runtime. Flags (--auto, --only-business) can suppress questions — suppressed questions become recorded, auditable assumptions, never silent guesses. --goal swaps the pipeline for a completion condition (no spec-kit needed), kept alive across turns by a Stop hook; /uroboros:compat audits a project's spec-kit against the plugin's compatibility contract. The loop that eats its own tail — and never guesses.",
   "author": { "name": "NicolasET", "url": "https://github.com/nicolaset" },
   "repository": "https://github.com/nicolaset/uroboros",
   "license": "MIT",
