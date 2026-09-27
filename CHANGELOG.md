@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.12.1 — 2026-09-26
+
+- **AGENTS.md.** Coding agents changing this repo now load a single source of truth: what Uroboros is for and why, the eight invariants no change may weaken, a map of the repo, the design rules (one definition referenced where used, progressive disclosure, claims verified in the same session, no slop), how a change is made (when to interview the maintainer, plan approval, a repo-wide coherence sweep, static and real-run verification) and how a release is published. A fixed test-bed project is recorded as planned.
+- **CONTRIBUTING rule 2** now matches it: one definition, referenced at the point of use, instead of copying instructions to every place they apply.
+
 ## 0.12.0 — 2026-09-26
 
 Fixes from a full audit of the plugin against its own rules and against the current Claude Code docs.
