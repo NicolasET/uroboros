@@ -130,6 +130,7 @@ specify integration upgrade claude   # reinstall the speckit-* skills from the n
 
 - The loop architecture follows [Addy Osmani's *Loop Engineering*](https://addyosmani.com/blog/loop-engineering/) — maker/checker separation, state on disk ("the agent forgets, the repo doesn't"), and verification gates that can actually fail work. One deliberate departure: where agents are commonly tuned to make a sensible assumption and keep going, Uroboros does the opposite. Assumptions are the failure mode it exists to eliminate.
 - Built on top of [GitHub Spec Kit](https://github.com/github/spec-kit)'s SDD workflow and skills.
+- Every minor and major release is measured by [uroboros-testbed](https://github.com/NicolasET/uroboros-testbed): the same scenario — a small API, one feature idea with five planted ambiguities, hidden acceptance tests — runs in every mode, and the results (ambiguities caught, hidden tests passed, cost, time) are compared version to version.
 - The maker/checker/orchestrator trio maps to Claude Code subagents: the reviewer is read-only tooling by construction; the implementer reports `BLOCKED` rather than guessing.
 
 ## License

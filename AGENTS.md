@@ -52,7 +52,7 @@ An agent never weakens any of these, even when a vague request would be easier t
 4. **Edit, then sweep for coherence.** Grep every concept the change touched across the whole repo — prompts, references, agents, README, CONTRIBUTING, CHANGELOG, manifests, compat contract, hook — and update or report each mention. Re-read the full flow of every file you changed.
 5. **Verify.**
    - Always: every JSON parses, `node --check hooks/goal-gate.js`, and — if the hook changed — its allow/block cases run against sample markers.
-   - Minor and major releases: a real `/uroboros:run` in a spec-kit project. Until the fixed test-bed project exists (below), use the maintainer's `vendara-front`; the release notes say which phases and modes (pipeline, `--goal`, `--auto`, …) were exercised.
+   - Minor and major releases: a full run of [uroboros-testbed](https://github.com/NicolasET/uroboros-testbed) against the release candidate (`npm run testbed -- --uroboros ../uroboros`), committed there as `results/<version>/`; the release notes link that result. A run cut short by the account's usage limit is re-run, never published.
 6. **Leave the changes uncommitted** until the maintainer asks to release.
 
 ## Releasing
@@ -60,10 +60,6 @@ An agent never weakens any of these, even when a vague request would be easier t
 - **Version.** Minor when behavior changes: a new capability, a change to what the plugin asks or does, or a contract change. Patch for wording, documentation drift, and bugs that do not change the flow.
 - **Files.** Bump `.claude-plugin/plugin.json`; add a dated `## x.y.z — YYYY-MM-DD` section at the top of `CHANGELOG.md` (bold lead per bullet, saying what changed and why); update the README where the behavior is user-visible. A spec-kit line adoption follows the re-verification procedure in `references/spec-kit-compat.md`.
 - **Publish.** Commit directly on `main` with the subject `<summary> (x.y.z)` and a short bullet body — no `Co-Authored-By` or `Claude-Session` trailers. Push, create the lightweight tag `vX.Y.Z` and push it, then `gh release create vX.Y.Z --title "X.Y.Z" --latest` with that version's CHANGELOG section as the notes.
-
-## Planned
-
-- **A fixed test-bed project** that runs the same scenario after every minor and major release, so results can be compared across versions. Not designed yet; until it exists, the interim rule in "How a change is made", step 5, applies.
 
 ## Working with the maintainer
 
