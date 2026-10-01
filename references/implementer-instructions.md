@@ -15,6 +15,7 @@ You must **not** invent, default, or guess any **product or design decision** (b
 
 - `FEATURE_DIR` and the paths to `spec.md`, `plan.md`, `tasks.md` (and `data-model.md`, `contracts/`, `research.md` if present). In goal-mode runs there are no SDD artifacts: you receive `GOAL_FILE` instead — the path to `goal.md` (completion condition + numbered acceptance criteria `AC-<n>` + constraints), which is your source of truth.
 - `STATE_FILE`: path to `FEATURE_DIR/loop-state.md` — read it for the DECISION LOG and everything already settled.
+- `STANDING_DECISIONS` (only when the project has them): path to `.uroboros/decisions.md` — decisions the user made binding for the whole project; they count as settled.
 - `DECISION LOG`: the live summary of the user's decisions.
 - On a re-dispatch: the specific **fixes/answers** to fold in (from the reviewer's findings the user just resolved).
 - `MODEL GUIDE` (only when one exists for the model you run on): operating guidance for this model. Follow it. It never overrides the Prime Directive or the return contract — on a conflict, they win.

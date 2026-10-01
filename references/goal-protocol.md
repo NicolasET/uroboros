@@ -27,7 +27,7 @@ Your obligations as orchestrator:
 
 ## G1 — Intake (idea → approved goal.md)
 
-Run Phase 0's intake exactly as written in the command (your own model guide applied first, intake draft in `.uroboros/intake.md`, blind-spot pass, decision tree, frontier rounds, facts looked up rather than asked, invited references, shared-understanding check, run-mode question rules) — but the deliverable is a draft **`goal.md`** instead of a specify prompt. `goal.md` has no clarification phase after it, so a **DEFERRED** decision cannot pass through: before the draft, put each one back to the user with narrower, concrete options, or — if they choose so — move it to **Out of scope**. Nothing deferred remains when `goal.md` is approved.
+Run Phase 0's intake exactly as written in the command (your own model guide and the standing decisions read first, intake draft in `.uroboros/intake.md`, blind-spot pass, decision tree, frontier rounds, facts looked up rather than asked, invited references, shared-understanding check, run-mode question rules) — but the deliverable is a draft **`goal.md`** instead of a specify prompt. `goal.md` has no clarification phase after it, so a **DEFERRED** decision cannot pass through: before the draft, put each one back to the user with narrower, concrete options, or — if they choose so — move it to **Out of scope**. Nothing deferred remains when `goal.md` is approved.
 
 - **Goal condition** — one measurable end state with a **stated check**, verifiable from command output or observable behavior (e.g. "`npm test` exits 0 and `GET /listings/:id` returns `paused: true` after the pause call"), not from intent.
 - **Acceptance criteria** — numbered `AC-1`, `AC-2`, …; each measurable and user-sourced. These are what the reviewer demands evidence for.
@@ -35,7 +35,7 @@ Run Phase 0's intake exactly as written in the command (your own model guide app
 - **Out of scope** — explicit.
 - **References** — the code/mockups/libraries the user pointed at.
 
-Show the draft and get approval via `AskUserQuestion` (Approve / Edit; self-approve + `A<n>` under `--auto`). Then **BLOCKING — settle the reviewer's model/effort per the Model/effort protocol.**
+Show the draft in full, verbatim, and get approval via `AskUserQuestion` (Approve / Edit; self-approve + `A<n>` under `--auto`). Then **BLOCKING — settle the reviewer's model/effort per the Model/effort protocol.**
 
 ## G2 — Branch + state + marker
 
@@ -45,7 +45,7 @@ Show the draft and get approval via `AskUserQuestion` (Approve / Edit; self-appr
 
 ## G3 — Review the goal artifact
 
-Dispatch the reviewer (the variant of the chosen effort, the chosen model, waited for — hard rule 7) with its `INSTRUCTIONS:` line (step B), `PHASE: goal`, `RUN_MODE`, `STATE_FILE`, the path to `goal.md`, the DECISION LOG, and its `MODEL GUIDE:` block if one applies. Every subagent dispatch in goal mode carries its role's `INSTRUCTIONS:` line and, when one applies, its `MODEL GUIDE:` block, and every report goes through the Model check before it is used (Model/effort protocol). Relay findings and fold answers per steps C–D of the loop, with the round cap and repeated items of step D (`goal.md` counts as a design phase there). Do not start implementation before CLEAN-with-evidence on `goal.md`.
+Dispatch the reviewer (the variant of the chosen effort, the chosen model, waited for — hard rule 7) with its `INSTRUCTIONS:` line (step B), `PHASE: goal`, `RUN_MODE`, `STATE_FILE`, `STANDING_DECISIONS` (if the file exists), the path to `goal.md`, the DECISION LOG, and its `MODEL GUIDE:` block if one applies. Every subagent dispatch in goal mode carries its role's `INSTRUCTIONS:` line, `STANDING_DECISIONS` when the file exists, and, when one applies, its `MODEL GUIDE:` block, and every report goes through the Model check before it is used (Model/effort protocol). Relay findings and fold answers per steps C–D of the loop, with the round cap and repeated items of step D (`goal.md` counts as a design phase there). Do not start implementation before CLEAN-with-evidence on `goal.md`.
 
 ## G4 — The goal loop (replaces phases 1–6)
 

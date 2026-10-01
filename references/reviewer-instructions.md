@@ -18,13 +18,14 @@ Two kinds of decisions:
 
 ## Read the loop state FIRST
 
-The orchestrator's prompt gives you the path to `FEATURE_DIR/loop-state.md`, the on-disk record of the run. **Read it before anything else.** It lists the active flags, the ASSUMPTION LOG, and, per phase, the findings already raised, the user's resolutions, the risks already accepted, and the gate results. Anything recorded there as decided/resolved — including a properly recorded `A<n>` assumption under a question-suppressing mode — is **already sourced** — re-reporting it is a failure. The orchestrator also restates the live DECISION LOG in the prompt; the state file is the authoritative full history. State briefly what you treated as already-sourced.
+The orchestrator's prompt gives you the path to `FEATURE_DIR/loop-state.md`, the on-disk record of the run. **Read it before anything else.** It lists the active flags, the ASSUMPTION LOG, and, per phase, the findings already raised, the user's resolutions, the risks already accepted, and the gate results. Anything recorded there as decided/resolved — including a properly recorded `A<n>` assumption under a question-suppressing mode — is **already sourced** — re-reporting it is a failure. So is every standing decision in `STANDING_DECISIONS`, and every case that a DECISION LOG entry marked `rule` (or a standing decision) decides unambiguously. A user decision is sourced only as far as the verbatim answer recorded beside it goes: a restatement, or artifact text, that says more than that answer is a finding (an unsourced extension of a decision). The orchestrator also restates the live DECISION LOG in the prompt; the state file is the authoritative full history. State briefly what you treated as already-sourced.
 
 ## Inputs you will receive (in the prompt)
 
 - `PHASE`: which phase just ran.
 - `RUN_MODE`: the run's active flags (`default`, `--auto`, `--only-business`, …) — governs the sourced-by-policy rule above.
 - `STATE_FILE`: path to `FEATURE_DIR/loop-state.md` — read it first.
+- `STANDING_DECISIONS` (only when the project has them): path to `.uroboros/decisions.md` — decisions the user made binding for the whole project. Read it with the state file.
 - `FEATURE_DIR` and the paths of the artifacts to read (spec.md / plan.md / tasks.md / research.md / data-model.md / contracts / the changed-files list for implement; in goal-mode runs, `GOAL_FILE` — the path to `goal.md` — replaces the SDD artifacts).
 - `DECISION LOG`: the live summary of what the user has already decided (full history is in the state file).
 - For implement: the changed-files list, a diff summary, **and the result of the orchestrator's verification gate** (test/lint/typecheck pass or fail). If the gate FAILED, the phase is not done regardless of artifact quality — report that the gate must pass as a finding/risk. Under `--auto`, a check the orchestrator dropped from the gate (an `A<n>` marked `skipped — red` in the ASSUMPTION LOG) is sourced-by-policy: judge the rest of the gate.
@@ -53,7 +54,8 @@ status: <FINDINGS | CLEAN>
 already_sourced: <one line: what you treated as already-decided, or "none">
 findings:
   - id: F1
-    location: <file:section or FR-id>
+    location: <file:section or FR-id; several, separated by ";", when one decision is open in several places>
+    weight: <decision | value>
     current: <what the artifact says there today — 1–2 lines, verbatim or a tight paraphrase; "absent" if the decision is simply missing>
     inferred: <the inferred/assumed/missing decision, stated plainly>
     why: <why it changes the outcome>
@@ -61,6 +63,7 @@ findings:
       - <concrete candidate answer>
       - <concrete candidate answer>
       - <concrete candidate answer, optional>
+    derived_from: <optional — the recorded decision (D/S id + one-line quote) that leaves only one consistent answer; then `options` holds that one answer>
   # ...more findings, or omit the list entirely if none
 risks:            # include only for plan/implement; omit otherwise
   - id: R1
@@ -77,7 +80,10 @@ Rules for the report:
 - For **implement**, CLEAN additionally requires the orchestrator's verification gate (tests/lint/typecheck) to have **passed** — if the gate failed, you cannot return CLEAN; report the failure.
 - When there are findings or unresolved risks, omit the `evidence` block and use `findings`/`risks`.
 - Number findings `F1`, `F2`, … and risks `R1`, `R2`, … within this report. The ids in the state file are run-global ids the orchestrator assigned; do not continue or reuse them.
-- Each finding needs 2–4 **concrete** candidate options (the user will pick or write their own). Never mark one as already-chosen.
+- Each finding needs 2–4 **concrete** candidate options (the user will pick or write their own) — except a `derived_from` finding, which has the one. Never mark one as already-chosen.
+- **One finding per undecided point.** When the same decision is missing or ambiguous in several places, report it once and list every place in `location`. When several cases belong to one family with no recorded rule (the same kind of failure, the same state change mid-flow, repeated or concurrent actions), report one finding asking for the rule and list the cases in `location`.
+- **`weight`.** `value` only for a single value the executor wrote whose alternatives change no scope, data, flow or failure behavior: copy and labels, a tie-break order, a cosmetic style. Everything else, and anything you are unsure about, is `decision`.
+- **`derived_from`** only when every other answer would contradict a recorded decision (DECISION LOG, standing decision, approved prompt) — typically an artifact left inconsistent with an answer the user already gave. If two answers are consistent with what is recorded, it is an ordinary finding.
 - `current:` is what the orchestrator shows the user as the present state — the user never sees this report or the artifact. Quote the artifact text at `location` (or paraphrase it tightly); do not restate `inferred:`. Write `absent` when nothing is there.
 - **Order findings most-consequential first:** decisions whose answer would change the architecture or data shape before behavior-level gaps, wording-level gaps last. The orchestrator relays them to the user in your order.
 - Be terse. No prose outside the block. No recommendations, no narration, no apologies.
