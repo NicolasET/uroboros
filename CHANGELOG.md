@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.14.0 — 2026-10-08
+
+Spec-kit 1.1 adopted. Pristine installs of v1.0.0, v1.1.0 and v1.1.2 were diffed file by file: no touchpoint broke (skill names, `feature.json`, templates, `extensions.yml`, clarify sections and task format are unchanged), and 1.1.1 and 1.1.2 change no skill, template or hook file.
+
+- **Contract baseline 1.1.0.** New snapshot `references/spec-kit-snapshot/1.1.0/`, a 1.1.0 row in the per-line review, and the new baseline and history in `spec-kit-compat.json` and `.md`. What 1.1 changed in the skills the run uses: clarify defers only implementation method, tech-stack comparison or task breakdown; tasks quotes each `data-model.md` field constraint verbatim; converge inventories every task whatever its checkbox and also flags code that exceeds the stated intent; every skill reports an unparseable `extensions.yml` instead of skipping it silently. Only the last one needed an adaptation.
+- **Unreadable `extensions.yml` is asked, not ignored.** When the hook file cannot be parsed, no skill checks any hook, mandatory ones included. The compatibility check at run start now asks once (stop to fix the file / continue without hooks; `--auto` continues and records `A<n>`), records `HOOKS: unreadable` in `loop-state.md`, the hook policy never asks again when a skill repeats the warning, and the Loop Report says first that no hook was checked. `/uroboros:compat` reports it as a NOTE on row 6.
+- **Older lines keep their snapshot.** `snapshot.lines` in the contract maps each reviewed line to its snapshot; `/uroboros:compat` diffs a project still on 1.0.x against the 1.0.0 snapshot and reports "covered by older line 1.0" instead of "unreviewed minor" with every hook block flagged as CHANGED.
+- **Testbed ([results/0.14.0+e731107.dirty](https://github.com/NicolasET/uroboros-testbed/tree/main/results/0.14.0%2Be731107.dirty), scenario v5, against [0.13.0](https://github.com/NicolasET/uroboros-testbed/tree/main/results/0.13.0)):** default 5/5 ambiguities and 11/11 hidden tests (0.13.0: 5/5, 11/11), 17 questions (15); `--goal` 5/5, 11/11, 12 questions (14); `--auto` 5/5, 8/11 (8/11); compat passes (0.13.0 fails: its contract is anchored to 1.0). Scenario v5 moves the fixture to spec-kit 1.1.0, so 0.13.0 was re-measured on it; earlier results are not comparable.
+- **Contract change (additive):** `spec-kit-compat.json` gains `snapshot.lines` and `hook_directives.policy.unreadable`; the compat report gains the verdict "covered by older line <x.y>".
+
 ## 0.13.0 — 2026-10-01
 
 Fewer questions, still none assumed. The maintainer's last 25 non-`--auto` runs on three projects asked about 62 questions each on average (about 65–100 in default mode, 38–59 under `--only-business`; counted from the recorded decisions in each `loop-state.md`, so estimates). About two thirds to three quarters came from relayed review findings, and edge cases were the largest share. Every change below cuts questions without turning any into an assumption: each decision still comes from the user.

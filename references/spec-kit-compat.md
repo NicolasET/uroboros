@@ -8,15 +8,16 @@ The machine-readable twin is [`spec-kit-compat.json`](./spec-kit-compat.json); t
 
 | | Value |
 |---|---|
-| Baseline | **spec-kit 1.0.0** (tag `v1.0.0`, released 2026-08-21) — verified by inspection 2026-09-02 |
-| Last full pipeline run | 1.0.0 — 2026-09-02 |
+| Baseline | **spec-kit 1.1.0** (tag `v1.1.0`, released 2026-10-02) — verified by inspection 2026-10-07 |
+| Last full pipeline run | 1.1.0 — 2026-10-08 |
 | Supported range | `>=0.12.0 <2.0.0` |
-| Verified project setup | `specify init --integration claude` (skills mode, script `ps`), git extension 1.0.0 |
-| Snapshot | [`spec-kit-snapshot/1.0.0/`](./spec-kit-snapshot/1.0.0/) |
+| Verified project setup | `specify init --integration claude` (skills mode, script `ps`), git extension 1.0.1 |
+| Snapshot | [`spec-kit-snapshot/1.1.0/`](./spec-kit-snapshot/1.1.0/) |
 
 ## Snapshot policy
 
 - **One snapshot per major.minor line**, taken from the `x.y.0` tag with a pristine `specify init` (the snapshot's `NOTICE.md` has the reproducible command). A line is where spec-kit adds behavior; a patch is where it fixes it.
+- **Older lines keep their snapshot** (`snapshot.lines` in the JSON): `/uroboros:compat` diffs a project on an older reviewed line against that line's snapshot and reports it as "covered by older line".
 - **Patches are never snapshotted.** `/uroboros:compat` reports a project on a newer patch of the baseline line as "covered by line (patch not reviewed)"; adopting a patch only moves `last_full_run` and the history.
 - **A new minor** gets a new snapshot, a row in the review table below, and becomes the baseline. **A new major** is never assumed compatible: until this contract is re-verified, the run skill asks before proceeding on such a project.
 
@@ -43,7 +44,7 @@ Everything the plugin assumes about spec-kit, where that assumption lives in the
 | 3 | `speckit-git-feature` (git extension, optional; extension declares `requires: speckit_version: ">=0.2.0"`) | Phase 0.5 (branch creation); absent → branchless | `specify extension list` |
 | 4 | `speckit-converge` (core since 0.11.2): assesses code vs spec/plan/tasks, **append-only** `## Phase N: Convergence` tasks or "Converged" with `tasks.md` untouched; must run only after tasks were implemented | `references/implement-protocol.md` convergence gate + resume rule; reviewer implement profile | marker check; snapshot diff |
 | 5 | `.specify/feature.json` → `feature_directory` (written by the create-new-feature script on the first specify; absent in a fresh project) | Phase −1 resume; step B artifact paths | `cat .specify/feature.json` |
-| 6 | **Hook directives** printed by skills from `.specify/extensions.yml`: mandatory `EXECUTE_COMMAND: <cmd>`, optional "To execute: `/<cmd>`"; dots → hyphens. Since 0.12.x the skill text tells the agent it MUST invoke a mandatory hook and wait; `before_specify` → `speckit.git.feature` is mandatory in every version reviewed | Hard rule 2 (hook policy): skip `speckit.git.feature` after Phase 0.5, decline optional hooks and log them, run other mandatory ones | `grep -n EXECUTE_COMMAND .claude/skills/speckit-specify/SKILL.md`; read `extensions.yml` |
+| 6 | **Hook directives** printed by skills from `.specify/extensions.yml`: mandatory `EXECUTE_COMMAND: <cmd>`, optional "To execute: `/<cmd>`"; dots → hyphens. Since 0.12.x the skill text tells the agent it MUST invoke a mandatory hook and wait; `before_specify` → `speckit.git.feature` is mandatory in every version reviewed. Since 1.1.0 a skill that cannot parse `extensions.yml` tells the user the parser error and that no hooks were checked, then continues (before: skipped silently) | Hard rule 2 (hook policy): skip `speckit.git.feature` after Phase 0.5, decline optional hooks and log them, run other mandatory ones; compatibility check step 3: an unreadable file is asked once | `grep -n EXECUTE_COMMAND .claude/skills/speckit-specify/SKILL.md`; read `extensions.yml` |
 | 7 | Spec template: `FR-###`, `SC-###`, `[NEEDS CLARIFICATION: …]` (max 3), `Assumptions` section, user stories with acceptance scenarios | Reviewer specify/tasks profiles; assumption mechanism; step D fold | `grep` the markers in `.specify/templates/spec-template.md` |
 | 8 | Clarify writes `## Clarifications` → `### Session YYYY-MM-DD` bullets | Step D fold; assumption mechanism (`(assumed — A<n>)` entries) | `grep -n "Clarifications\|Session" .claude/skills/speckit-clarify/SKILL.md` |
 | 9 | Plan artifacts `research.md`, `data-model.md`, `contracts/`, plan-level Constitution Check | Reviewer plan profile; implementer inputs; step B paths | `grep` in `plan-template.md` and the plan skill |
@@ -59,9 +60,10 @@ The pipeline is its own hook executor (hard rule 2 in `skills/run/SKILL.md`):
 - `speckit.git.feature` (`before_specify`) — **skipped** when Phase 0.5 already created the branch. A run never creates a second branch.
 - **Optional hooks** (`speckit.git.commit` after specify/plan, `speckit.agent-context.update`, …) — **declined silently**, recorded under `DECLINED HOOKS` in `loop-state.md`, listed in the Loop Report for the user to run by hand. The run never commits.
 - Any **other mandatory hook** — invoked by the orchestrator, waited for, then the phase continues. Never stop at a directive.
+- **`extensions.yml` cannot be parsed** — no skill checks any hook, mandatory ones included. The compatibility check asks once (stop to fix the file / continue without hooks; `--auto` continues and records `A<n>`), records `HOOKS: unreadable` in `loop-state.md`, and the Loop Report repeats it. `/uroboros:compat` reports it as a NOTE on row 6.
 - **Events a run can trigger:** `before`/`after` of specify, clarify, plan, tasks, analyze and converge (`hook_directives.events_used` in the JSON). `speckit-implement` is replaced by the implementer subagent, so its hooks never fire; constitution, checklist and taskstoissues are never invoked. `/uroboros:compat` only flags mandatory hooks on the triggered events.
 
-## Review per spec-kit line (0.12.10 → 1.0.0)
+## Review per spec-kit line (0.12.10 → 1.1.0)
 
 Source: pristine installs of each tag (`uvx --from git+https://github.com/github/spec-kit.git@v<version> specify init …`, Claude integration, script `ps`, git extension), diffing the eight snapshot skills, the three templates and `extensions.yml` between consecutive lines. "Plugin impact" is measured against the touchpoints above.
 
@@ -73,6 +75,7 @@ Source: pristine installs of each tag (`uvx --from git+https://github.com/github
 | **0.15.0** | Hook blocks in every skill: "slash commands" → "command invocations"; clarify enforces interrogative questions with requirement ids only as a parenthesized suffix | none (the clarify rule mirrors the plugin's Question protocol) |
 | **0.16.0** | Skills and templates identical to 0.15.0 (CLI: `--extension` accepted at `init`) | none |
 | **1.0.0** | Tasks: setup script also returns `TASKS_TEMPLATE_CONTENT`; implement: checklists become a read-only gate, `checklists/requirements.md` owned by specify/clarify, custom checklists reviewer-owned, "Completed/Incomplete" → "Checked/Unchecked" (CLI: `--non-interactive`) | touchpoint 12 only — step D's "re-tick the phase checklist" stays valid because specify/clarify own that file |
+| **1.1.0** | Every skill: an unparseable `extensions.yml` is reported to the user (parser error, no hooks checked, mandatory ones included) instead of skipped silently. Clarify defers only implementation method, tech-stack comparison or task breakdown (was: anything "better deferred to planning"). Tasks quotes each `data-model.md` field constraint verbatim in the task. Converge inventories every task whatever its checkbox ("completion claims are not evidence") and also flags code that exceeds or falls outside the stated intent. Analyze and converge pass `-RequireSpec`; `setup-plan` returns `FEATURE_DIR` instead of `SPECS_DIR`; the git extension (1.0.1) keeps Unicode letters in branch names. 1.1.1 and 1.1.2: CLI only (catalogs, workflows, experimental MCP server) | touchpoint 6 — unreadable `extensions.yml` handled (compatibility check step 3, hook policy (d), Loop Report, compat row 6). The clarify, tasks and converge changes need no adaptation: append-only convergence and the clarify section format are unchanged |
 
 Skill names, `feature.json`, template markers and clarify section names did not change across any line.
 
@@ -84,7 +87,7 @@ Skill names, `feature.json`, template markers and clarify section names did not 
 4. Run the full pipeline once on the new release.
 5. Update the contract:
    - **Patch** (`x.y.z` within the baseline line): move `last_full_run` and add a `history` row in the JSON, and update the Status table here. No new snapshot.
-   - **Minor or major**: take a new snapshot from the `x.y.0` tag into `references/spec-kit-snapshot/<x.y.0>/` and regenerate `hashes.json` (see the snapshot's `NOTICE.md`); add a row to the review table; set the new `baseline`; note the spec-kit release in the CHANGELOG entry; bump the plugin version.
+   - **Minor or major**: take a new snapshot from the `x.y.0` tag into `references/spec-kit-snapshot/<x.y.0>/` and regenerate `hashes.json` (see the snapshot's `NOTICE.md`); add it to `snapshot.lines`; add a row to the review table; set the new `baseline`; note the spec-kit release in the CHANGELOG entry; bump the plugin version.
 
 ## History
 
@@ -94,3 +97,4 @@ Skill names, `feature.json`, template markers and clarify section names did not 
 | 0.6.0 | 2026-07-29 | 0.14.4 | contemporary release; ran on it |
 | 0.7.0 | 2026-08-06 | 0.16.0 | contemporary release; ran on it |
 | 0.8.0 | 2026-09-02 | 1.0.0 | contract introduced; every line from 0.12.10 reviewed by diff; full run |
+| 0.14.0 | 2026-10-08 | 1.1.0 | 1.1 line adopted; 1.0.0 → 1.1.0 reviewed by diff; unreadable `extensions.yml` handled; older lines keep their snapshot; full run on 1.1.0 (uroboros-testbed scenario v5) |

@@ -14,9 +14,9 @@ You are auditing **the project in the current working directory** against Urobor
 
 Inputs (all under `${CLAUDE_PLUGIN_ROOT}` — the plugin root is the directory that contains `skills/`, `references/` and `.claude-plugin/`, i.e. two levels above this SKILL.md; resolve it once and do not look for `references/` inside `skills/compat/`):
 
-- `references/spec-kit-compat.json` — the contract: the baseline release and its snapshot (`baseline`), the supported range, version sources, the install manifest that hashes every installed skill (`install_manifest`), required/audited/optional skills, files and markers, skill markers, hook directive shapes and the hook events a run triggers (`hook_directives.events_used`).
+- `references/spec-kit-compat.json` — the contract: the baseline release and its snapshot (`baseline`), the snapshot of every reviewed line (`snapshot.lines`), the supported range, version sources, the install manifest that hashes every installed skill (`install_manifest`), required/audited/optional skills, files and markers, skill markers, hook directive shapes and the hook events a run triggers (`hook_directives.events_used`).
 - `references/spec-kit-compat.md` — the touchpoint table; its `#` numbers are the row ids below.
-- `<baseline.snapshot>/<skill>/SKILL.md` — the skill texts of the baseline release, plus `hashes.json`.
+- `<snapshot>/<skill>/SKILL.md` — the skill texts of a reviewed line, plus `hashes.json`. `<snapshot>` is `snapshot.lines[<project major.minor>]` when the project is on an older reviewed line, otherwise `baseline.snapshot` (section 2).
 
 `--verbose` prints every diff in full; by default print only the hunks behind DRIFT and CHANGED rows.
 
@@ -28,7 +28,7 @@ If `.specify/` does not exist in the working directory, say this is not a spec-k
 
 - Read the contract's `version_sources` in order; the first file/key that resolves is the **project version**. Record all three when present (they can disagree after a partial upgrade — say so).
 - If `specify` is on PATH, run the contract's `cli.version_command` for the **CLI version** and `cli.extension_list_command` for the git extension version. A CLI newer than the project version means `specify integration upgrade claude` has not been run yet — say so.
-- Verdict on the project version vs the contract: same version as `baseline.version` → "covered"; same major.minor line (`baseline.line`), different patch → "covered by line (patch not reviewed)"; same major, different minor → "unreviewed minor (new snapshot and review due)"; **different major** → "unverified major"; outside `supported_range` → "unsupported"; undetectable → "unknown".
+- Verdict on the project version vs the contract: same version as `baseline.version` → "covered"; same major.minor line (`baseline.line`), different patch → "covered by line (patch not reviewed)"; same major, older minor listed in `snapshot.lines` → "covered by older line <x.y>" (diff against that line's snapshot); any other different minor → "unreviewed minor (new snapshot and review due)"; **different major** → "unverified major"; outside `supported_range` → "unsupported"; undetectable → "unknown".
 
 ## 3. Skills
 
@@ -51,6 +51,8 @@ Rows from the contract's `files`: `5` `.specify/feature.json`, `7` `spec-templat
 
 Row `6`. Read `.specify/extensions.yml` and consider **only** the events listed in `hook_directives.events_used` — the loop never triggers the others. For each considered event list command, `optional` and `enabled`.
 
+If the file cannot be parsed, row 6 is **NOTE**: quote the parser error in `Details`; no hook can be listed, and a run will ask whether to continue without hooks (run skill, compatibility check).
+
 - **NOTE** when a hook is mandatory (`optional: false` and not `enabled: false`) and is not `speckit.git.feature`: the hook policy will execute it during a run.
 - Informational, not a NOTE: `speckit.git.feature` disabled or missing (Phase 0.5 creates the branch anyway); mandatory hooks on events outside `events_used` (one line naming them, "never triggered by the loop").
 
@@ -64,7 +66,7 @@ Print exactly this structure, starting with the four header lines — they are m
 SPEC-KIT COMPAT REPORT
 project: <cwd>
 project spec-kit: <version> (<file>)   cli: <version | not on PATH>   git extension: <version | ->
-contract: baseline <version> (verified <date>)   range <supported_range>   verdict: <covered | covered by line, patch not reviewed | unreviewed minor | unverified major | unsupported | unknown>
+contract: baseline <version> (verified <date>)   range <supported_range>   verdict: <covered | covered by line, patch not reviewed | covered by older line <x.y> | unreviewed minor | unverified major | unsupported | unknown>
 
 | #   | Touchpoint            | Status  | Adapt |
 |-----|-----------------------|---------|-------|
@@ -94,6 +96,7 @@ Diffs: <hunks behind DRIFT and CHANGED rows; every hunk with --verbose; "none" o
 Next steps (at most 5 lines):
 - <newer patch of the baseline line: "bookkeeping only — last_full_run/history in spec-kit-compat.json, Status table in spec-kit-compat.md">
 - <newer minor or major: "new snapshot from the x.y.0 tag (NOTICE.md), review row, new baseline, CHANGELOG, plugin.json">
+- <older line: "`specify integration upgrade claude` moves the project to the baseline line <baseline.line>">
 - <one line per CHANGED or MISSING row: the plugin file to adapt, most consequential first>
 - <unverified major: "the run skill will ask before proceeding on this project">
 ```

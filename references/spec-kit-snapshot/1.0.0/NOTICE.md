@@ -22,4 +22,4 @@ done
 node -e 'const fs=require("fs"),c=require("crypto"),d=process.argv[1],o={};for(const s of fs.readdirSync(d).sort()){const f=d+"/"+s+"/SKILL.md";if(fs.existsSync(f))o[s+"/SKILL.md"]=c.createHash("sha256").update(fs.readFileSync(f)).digest("hex")}fs.writeFileSync(d+"/hashes.json",JSON.stringify(o,null,2)+"\n")' references/spec-kit-snapshot/<x.y.0>
 ```
 
-(`--non-interactive` exists from 1.0.0; `--extension` at `init` from 0.16.0 — for older tags run `specify extension add git` inside the project instead.) Then point `baseline` and `snapshot` in `references/spec-kit-compat.json` at the new directory and copy this NOTICE next to it.
+(`--non-interactive` exists from 1.0.0; `--extension` at `init` from 0.16.0 — for older tags run `specify extension add git` inside the project instead.) Then point `baseline` and `snapshot` in `references/spec-kit-compat.json` at the new directory, add it to `snapshot.lines`, and copy this NOTICE next to it.
