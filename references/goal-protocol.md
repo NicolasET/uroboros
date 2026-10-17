@@ -45,7 +45,7 @@ Show the draft in full, verbatim, and get approval via `AskUserQuestion` (Approv
 
 ## G3 — Review the goal artifact
 
-Dispatch the reviewer (the variant of the chosen effort, the chosen model, waited for — hard rule 7) with its `INSTRUCTIONS:` line (step B), `PHASE: goal`, `RUN_MODE`, `STATE_FILE`, `STANDING_DECISIONS` (if the file exists), the path to `goal.md`, the DECISION LOG, and its `MODEL GUIDE:` block if one applies. Every subagent dispatch in goal mode carries its role's `INSTRUCTIONS:` line, `STANDING_DECISIONS` when the file exists, and, when one applies, its `MODEL GUIDE:` block, and every report goes through the Model check before it is used (Model/effort protocol). Relay findings and fold answers per steps C–D of the loop, with the round cap and repeated items of step D (`goal.md` counts as a design phase there). Do not start implementation before CLEAN-with-evidence on `goal.md`.
+Dispatch the reviewer (the variant of the chosen effort, the chosen model, waited for — hard rule 7) with its `INSTRUCTIONS:` line (step B), `PHASE: goal`, `ROUND` (and `FOLDS` from round 2), `RUN_MODE`, `STATE_FILE`, `STANDING_DECISIONS` (if the file exists), the path to `goal.md`, the DECISION LOG, and its `MODEL GUIDE:` block if one applies. Every subagent dispatch in goal mode carries its role's `INSTRUCTIONS:` line, `STANDING_DECISIONS` when the file exists, and, when one applies, its `MODEL GUIDE:` block, and every report goes through the Model check before it is used (Model/effort protocol). Relay findings and fold answers per steps C–D of the loop, with the round cap and repeated items of step D (`goal.md` counts as a design phase there). Do not start implementation before CLEAN-with-evidence on `goal.md`.
 
 ## G4 — The goal loop (replaces phases 1–6)
 
@@ -53,10 +53,10 @@ Dispatch the reviewer (the variant of the chosen effort, the chosen model, waite
 
 1. **Implement.** Dispatch the implementer (the variant of the chosen effort, the chosen model, waited for) with its `INSTRUCTIONS:` line (implement protocol, step 2), `GOAL_FILE` (the path to `goal.md`) in place of the spec/plan/tasks paths, plus `STATE_FILE`, the DECISION LOG, its `MODEL GUIDE:` block if one applies, and — on a re-dispatch — the fixes/answers to fold. Handle `BLOCKED` exactly as in `implement-protocol.md`. You never hand-edit code; every fold goes through the implementer.
 2. **Gate.** Run the real verification commands (discover once, record in `loop-state.md`, reuse — same as step A2). A red gate means the round is not done.
-3. **Review.** Dispatch the reviewer with `PHASE: goal-implement`, the changed-file list (`git diff --name-only` / `--stat`), the gate result, `GOAL_FILE`, `STATE_FILE`, the DECISION LOG, and its `MODEL GUIDE:` block if one applies. CLEAN requires evidence per acceptance criterion (`AC-<n>`) plus a green gate.
-4. **Fold.** Relay findings/risks per the run mode; record every resolution; re-dispatch the implementer with them; re-run the gate; re-dispatch the reviewer.
+3. **Review.** Dispatch the reviewer with `PHASE: goal-implement`, `ROUND` (and `FOLDS` from round 2, per step B), the changed-file list (`git diff --name-only` / `--stat`), the gate result, `GOAL_FILE`, `STATE_FILE`, the DECISION LOG, and its `MODEL GUIDE:` block if one applies. CLEAN requires evidence per acceptance criterion (`AC-<n>`) plus a green gate.
+4. **Fold.** Refute and relay findings/risks per steps C–D of the loop and the run mode; record every resolution; re-dispatch the implementer with them and the sweep of step D; re-run the gate; re-dispatch the reviewer.
 
-Exit the loop on CLEAN-with-evidence + green gate. Round cap and repeated items follow step D (the rounds here count as implement). If a cap is exhausted first, follow the command's failure handling: set `status: "stopped"` in `active-run.json`, record everything in `loop-state.md`, and surface the remaining items plainly.
+Exit the loop on CLEAN-with-evidence + green gate. Round cap and repeated items follow step D (the rounds here count as implement). If a cap is exhausted first, ask the exhausted-cap question of step D. On *Decide them now*, add one to `rounds_max` in `active-run.json` before the next round so the hook keeps relaunching; on *Leave them out*, close per G5; on *Stop the run* (and under `--auto` with an explicit `--rounds=N` exhausted), follow the command's failure handling: set `status: "stopped"` in `active-run.json` and record everything in `loop-state.md`.
 
 ## G5 — Close
 

@@ -27,8 +27,8 @@ An agent never weakens any of these, even when a vague request would be easier t
 
 - `skills/run/SKILL.md` — the orchestrator: flags, Hard rules, Model/effort protocol, Question protocol, phases. Always loaded when a run starts, so keep it lean.
 - `skills/compat/SKILL.md` — report-only audit of a project's spec-kit against the contract.
-- `agents/uroboros-{reviewer,implementer}-{low,medium,high,xhigh,max}.md` — thin variants that differ only in `effort`; they point to the role instructions.
-- `references/reviewer-instructions.md`, `references/implementer-instructions.md` — the role bodies, including the `LOOP-REVIEW-FINDINGS` and `IMPLEMENTER-REPORT` contracts the orchestrator parses.
+- `agents/uroboros-{reviewer,implementer}-{low,medium,high,xhigh,max}.md` — thin variants that differ only in `effort`; they point to the role instructions; the reviewer variants also run the refuter role.
+- `references/reviewer-instructions.md`, `references/refuter-instructions.md`, `references/implementer-instructions.md` — the role bodies, including the `LOOP-REVIEW-FINDINGS`, `LOOP-REFUTER-RESULTS` and `IMPLEMENTER-REPORT` contracts the orchestrator parses.
 - `references/implement-protocol.md`, `goal-protocol.md`, `loop-report.md` — read by the orchestrator only when that part of the run arrives (progressive disclosure).
 - `references/model-guides/<family>-<version>.md` — per-release prompting guidance (rules in CONTRIBUTING.md, item 5).
 - `references/spec-kit-compat.md` + `.json` + `spec-kit-snapshot/` — the spec-kit contract; the `.md` and `.json` must stay in sync, and `hashes.json` is computed over LF content.
