@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.16.1 — 2026-10-17
+
+- **The plugin version is on record.** No file a run left said which Uroboros release produced it, so a feature's specs could not be traced back to the plugin that shaped them. `loop-state.md` now carries `UROBOROS: <version>`, read from the plugin's `.claude-plugin/plugin.json` at the start of the run; a resume on another release appends `; resumed on <version> at <phase>`, and the Loop Report states it. A state file from an earlier release reads `before 0.16.1` from its first resume on.
+
 ## 0.16.0 — 2026-10-17
 
 The product used, not only tested. Until now a run closed on the reviewer's `CLEAN` and a green test/lint/typecheck gate, and the tests were written by the same implementer they judged: nothing ever used what was built. Spec-kit's plan already writes `quickstart.md` as runnable validation scenarios, and the spec states each user story's acceptance scenarios; no step ran them. Anthropic's [How the Claude Code team does code review](https://claude.dev/blog/solving-code-review-at-anthropic/) gives the same advice: give Claude something it can run and have it show the output.

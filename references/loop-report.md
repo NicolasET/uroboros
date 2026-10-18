@@ -3,6 +3,7 @@
 Output a **Loop Report** designed to be the user's review surface, since they did not watch each phase:
 
 - Branch name and the path to `loop-state.md`.
+- The Uroboros version the run ran on (the `UROBOROS:` line in `loop-state.md`), with every version a resume ran on.
 - The spec-kit version detected at the start of the run (the `SPEC-KIT:` line in `loop-state.md`) and the contract version the plugin was verified against.
 - **Models and guides:** per role (orchestrator, reviewer, refuter, implementer, verifier), the release it ran on and the model guide applied or `none` (the `MODEL GUIDES` record in `loop-state.md`), plus every model mismatch the Model check caught and how it was resolved.
 - The run's size (small or standard) and the round cap it set, or the `--rounds` value that replaced it.

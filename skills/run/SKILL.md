@@ -98,12 +98,16 @@ Product and behavior decisions the user has made binding for the whole project, 
 - **Contradiction.** When the idea or an answer contradicts a standing decision, ask per the Question protocol: keep it, set it aside for this feature only, or change it for the project (then rewrite the entry).
 - **Grow** it only at the end of a run, with the user's answer (Loop Report). Never under `--auto`. The file is left uncommitted like every other change.
 
+## Plugin version — the `UROBOROS:` line
+
+Read `version` from `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json` at the start of every run, fresh or resumed, in both modes. A fresh run records `UROBOROS: <version>` in the intake draft, and the step that creates `loop-state.md` copies it there. A resume compares it with the last version on that line and, when it differs, appends `; resumed on <version> at <phase>` — the phase being resumed: `intake`, a phase name, or in goal mode `goal` or `round <n>`. A state file or intake draft without the line was started before 0.16.1: write `UROBOROS: before 0.16.1; resumed on <version> at <phase>`. The Loop Report states it.
+
 ## Phase −1 — Resume check (before anything else)
 
 Decide fresh-vs-resume from the input (after stripping flags):
 - If the remainder of `$ARGUMENTS` contains a new idea, this is a **fresh run** → go to Phase 0. (Do not resume a prior feature just because its state file exists.)
-- If it is empty or says to resume/continue and `.uroboros/intake.md` exists, the run was interrupted during intake: restore its ACTIVE FLAGS (overridden by any flags on this invocation), decision tree and logs, apply your own model guide (Model/effort protocol), and continue Phase 0 from the recorded frontier.
-- Otherwise, if it is empty or says to resume/continue, resolve the active feature from `.specify/feature.json` and read `FEATURE_DIR/loop-state.md`. If it shows an **incomplete** run, restore the recorded ACTIVE FLAGS (overridden by any flags on this invocation), re-resolve the MODEL GUIDES per the Model/effort protocol, and resume from the last incomplete phase using the recorded DECISION LOG and resolutions — do not restart from intake (resuming implement: follow the implement protocol's resume rule). If there is no incomplete state to resume, tell the user there is nothing to resume and ask for an idea.
+- If it is empty or says to resume/continue and `.uroboros/intake.md` exists, the run was interrupted during intake: restore its ACTIVE FLAGS (overridden by any flags on this invocation), decision tree and logs, apply your own model guide (Model/effort protocol), check the plugin version (Plugin version), and continue Phase 0 from the recorded frontier.
+- Otherwise, if it is empty or says to resume/continue, resolve the active feature from `.specify/feature.json` and read `FEATURE_DIR/loop-state.md`. If it shows an **incomplete** run, restore the recorded ACTIVE FLAGS (overridden by any flags on this invocation), re-resolve the MODEL GUIDES per the Model/effort protocol, check the plugin version (Plugin version), and resume from the last incomplete phase using the recorded DECISION LOG and resolutions — do not restart from intake (resuming implement: follow the implement protocol's resume rule). If there is no incomplete state to resume, tell the user there is nothing to resume and ask for an idea.
 
 ## Spec-kit compatibility check (fresh runs and resumes)
 
@@ -122,7 +126,7 @@ Goal mode (`--goal`) skips this section — it does not use spec-kit.
 
 ## Phase 0 — Intake (idea -> approved English specify prompt)
 
-**Intake draft on disk.** No `FEATURE_DIR` exists until Phase 0.5, so intake writes to `.uroboros/intake.md` instead: the idea, ACTIVE FLAGS, the decision tree (settled / open / deferred nodes), the DECISION LOG, the ASSUMPTION LOG and the DEFERRED list. Create it after step 2 and rewrite it after every round. Phase 0.5 copies its sections into `loop-state.md` and deletes it.
+**Intake draft on disk.** No `FEATURE_DIR` exists until Phase 0.5, so intake writes to `.uroboros/intake.md` instead: the idea, the `UROBOROS:` line (Plugin version), ACTIVE FLAGS, the decision tree (settled / open / deferred nodes), the DECISION LOG, the ASSUMPTION LOG and the DEFERRED list. Create it after step 2 and rewrite it after every round. Phase 0.5 copies its sections into `loop-state.md` and deletes it.
 
 1. Apply your own model guide, if one exists for your exact release, per the Model/effort protocol (Model guides) — it governs how you run intake too. Read the standing decisions, if the file exists. Read the idea. If it references files (e.g. `@specs/.../something.md`), read them.
 2. **Blind-spot pass.** Before interrogating, explore the codebase around the idea (Grep/Glob/Read) and surface the user's **unknown unknowns**: prior work in the same area, existing invariants or conventions the idea touches, and decisions the idea silently implies that the user has probably not considered. Turn what you find into questions in step 3 — the point of intake is to surface decisions before they get expensive, not to fill a checklist.
@@ -141,7 +145,7 @@ Goal mode (`--goal`) skips this section — it does not use spec-kit.
 
 Invoke the `speckit-git-feature` skill once with the approved feature description to create the feature branch. If git is unavailable or the skill is not installed, continue without a branch. The `before_specify` hook that would create it again is skipped by the hook policy (rule 2).
 
-Then create `FEATURE_DIR/loop-state.md` with: the feature/branch, the ACTIVE FLAGS, the run's size, the approved English prompt, and — copied from `.uroboros/intake.md` — the DECISION LOG so far (intake answers), the ASSUMPTION LOG so far (if any) and the DEFERRED list, plus an empty per-phase section for specify → implement. Delete `.uroboros/intake.md` once the copy is written. Update `loop-state.md` at every step below.
+Then create `FEATURE_DIR/loop-state.md` with: the feature/branch, the ACTIVE FLAGS, the run's size, the approved English prompt, and — copied from `.uroboros/intake.md` — the `UROBOROS:` line, the DECISION LOG so far (intake answers), the ASSUMPTION LOG so far (if any) and the DEFERRED list, plus an empty per-phase section for specify → implement. Delete `.uroboros/intake.md` once the copy is written. Update `loop-state.md` at every step below.
 
 ## Phases 1–6 — the loop
 

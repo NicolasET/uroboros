@@ -23,7 +23,7 @@ Your obligations as orchestrator:
 
 - **Create** the marker in G2: `{"feature": "<slug>", "dir": ".uroboros/<slug>", "session_id": "<this session's id, from the --goal row of the command>", "status": "active", "rounds_used": 0, "relaunches": 0, "rounds_max": <the round cap per step D, or null when step D sets none>}`.
 - **Set a terminal `status`** — `"complete"` when the run closes (G5), `"stopped"` when you stop deliberately (round cap exhausted, unrecoverable error, user told you to stop). An `"active"` marker left behind keeps relaunching the session — never end a goal run without updating it.
-- When the hook relaunches you mid-run, treat it as a **resume**: re-read `active-run.json` and `loop-state.md`, re-resolve the MODEL GUIDES per the Model/effort protocol, and continue from the recorded point. A fresh `/uroboros:run --goal` with no idea resumes the same way if `active-run.json` shows an active run — first write this session's id into its `session_id` so the hook keeps this session alive from now on. This replaces the Phase −1 check. With no active run but a `.uroboros/intake.md` draft, the run was interrupted during intake: restore it, apply your own model guide, and continue G1 from the recorded frontier.
+- When the hook relaunches you mid-run, treat it as a **resume**: re-read `active-run.json` and `loop-state.md`, re-resolve the MODEL GUIDES per the Model/effort protocol, check the plugin version (the command's Plugin version), and continue from the recorded point. A fresh `/uroboros:run --goal` with no idea resumes the same way if `active-run.json` shows an active run — first write this session's id into its `session_id` so the hook keeps this session alive from now on. This replaces the Phase −1 check. With no active run but a `.uroboros/intake.md` draft, the run was interrupted during intake: restore it, apply your own model guide, check the plugin version, and continue G1 from the recorded frontier.
 
 ## G1 — Intake (idea → approved goal.md)
 
@@ -40,7 +40,7 @@ Show the draft in full, verbatim, and get approval via `AskUserQuestion` (Approv
 ## G2 — Branch + state + marker
 
 - Create a feature branch with plain git (`git checkout -b goal/<slug>`); if git is unavailable, continue branchless. Do not use `speckit-git-feature`.
-- Create `.uroboros/<slug>/goal.md` and `loop-state.md` (ACTIVE FLAGS, approved goal, DECISION LOG so far, ASSUMPTION LOG so far — copied from `.uroboros/intake.md` — empty per-round section). Delete `.uroboros/intake.md` once the copy is written.
+- Create `.uroboros/<slug>/goal.md` and `loop-state.md` (the `UROBOROS:` line, ACTIVE FLAGS, approved goal, DECISION LOG so far, ASSUMPTION LOG so far — copied from `.uroboros/intake.md` — empty per-round section). Delete `.uroboros/intake.md` once the copy is written.
 - Write `.uroboros/active-run.json` per the contract above. From this point the hook keeps this session alive until you set a terminal status.
 
 ## G3 — Review the goal artifact
