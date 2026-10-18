@@ -15,21 +15,21 @@ A Claude Code plugin that runs GitHub Spec Kit's Spec-Driven Development pipelin
 An agent never weakens any of these, even when a vague request would be easier to satisfy by doing so. If a request conflicts with one, stop and say which.
 
 1. **No silent inference.** No product or design decision is assumed. When a run mode suppresses a question, the decision is recorded as an `A<n>` assumption, never guessed silently.
-2. **Maker/checker split.** The agent that produces an artifact never judges it. The reviewer runs in fresh context and is read-only.
+2. **Maker/checker split.** The agent that produces an artifact never judges it. The reviewer runs in fresh context and is read-only; the verifier uses the product and never edits it.
 3. **The plugin never commits.** Every change a run makes is left for the user to review.
 4. **The user chooses model and effort.** No subagent runs on a model or effort the user did not choose (the headless fallback is recorded as an assumption). Effort is set per agent definition, hence the `-<effort>` variants.
 5. **Self-contained questions.** Every question states what the artifact says today and why it matters; internal ids (`F17`, `FR-004`) are only trailing trace tags.
 6. **Neutral options.** The plugin never marks an option as recommended or pre-chosen, so the user reads and decides instead of accepting a default without thinking. This applies to the questions the plugin asks its users — not to how an agent interviews the maintainer (below), where recommending is expected.
 7. **State on disk.** `loop-state.md` records flags, decisions, assumptions, findings and gate results; an interrupted run resumes instead of restarting.
-8. **Done is proof.** The reviewer's `CLEAN` requires evidence per criterion; implement also requires the real test/lint/typecheck gate to pass.
+8. **Done is proof.** The reviewer's `CLEAN` requires evidence per criterion; implement also requires the real test/lint/typecheck gate to pass and the approved scenarios to pass when the product is used.
 
 ## Repository map
 
 - `skills/run/SKILL.md` — the orchestrator: flags, Hard rules, Model/effort protocol, Question protocol, phases. Always loaded when a run starts, so keep it lean.
 - `skills/compat/SKILL.md` — report-only audit of a project's spec-kit against the contract.
-- `agents/uroboros-{reviewer,implementer}-{low,medium,high,xhigh,max}.md` — thin variants that differ only in `effort`; they point to the role instructions; the reviewer variants also run the refuter role.
-- `references/reviewer-instructions.md`, `references/refuter-instructions.md`, `references/implementer-instructions.md` — the role bodies, including the `LOOP-REVIEW-FINDINGS`, `LOOP-REFUTER-RESULTS` and `IMPLEMENTER-REPORT` contracts the orchestrator parses.
-- `references/implement-protocol.md`, `goal-protocol.md`, `loop-report.md` — read by the orchestrator only when that part of the run arrives (progressive disclosure).
+- `agents/uroboros-{reviewer,implementer,verifier}-{low,medium,high,xhigh,max}.md` — thin variants that differ only in `effort`; they point to the role instructions; the reviewer variants also run the refuter role.
+- `references/reviewer-instructions.md`, `references/refuter-instructions.md`, `references/implementer-instructions.md`, `references/verifier-instructions.md` — the role bodies, including the `LOOP-REVIEW-FINDINGS`, `LOOP-REFUTER-RESULTS`, `IMPLEMENTER-REPORT` and `VERIFIER-REPORT` contracts the orchestrator parses.
+- `references/implement-protocol.md`, `verify-protocol.md`, `goal-protocol.md`, `loop-report.md` — read by the orchestrator only when that part of the run arrives (progressive disclosure).
 - `references/model-guides/<family>-<version>.md` — per-release prompting guidance (rules in CONTRIBUTING.md, item 5).
 - `references/spec-kit-compat.md` + `.json` + `spec-kit-snapshot/` — the spec-kit contract; the `.md` and `.json` must stay in sync, and `hashes.json` is computed over LF content.
 - `hooks/goal-gate.js` — goal-mode Stop hook. Node standard library only; it must allow the stop on any doubt and only ever keep the session that owns the run alive.

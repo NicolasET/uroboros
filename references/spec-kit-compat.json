@@ -82,12 +82,12 @@
       "used_by": ["skills/run/SKILL.md (hard rule 2, hook policy)"]
     },
     ".specify/templates/spec-template.md": {
-      "markers": ["FR-001", "SC-001", "NEEDS CLARIFICATION"],
-      "used_by": ["references/reviewer-instructions.md (specify, tasks profiles)", "skills/run/SKILL.md (assumption mechanism, step D fold)"]
+      "markers": ["FR-001", "SC-001", "NEEDS CLARIFICATION", "Acceptance Scenarios"],
+      "used_by": ["references/reviewer-instructions.md (specify, tasks profiles)", "skills/run/SKILL.md (assumption mechanism, step D fold)", "references/verifier-instructions.md (scenarios US<n>/AC<k>)"]
     },
     ".specify/templates/plan-template.md": {
-      "markers": ["research.md", "data-model.md", "contracts/", "Constitution"],
-      "used_by": ["references/reviewer-instructions.md (plan profile)", "references/implementer-instructions.md (inputs)", "skills/run/SKILL.md (step B artifact paths)"]
+      "markers": ["research.md", "data-model.md", "contracts/", "quickstart.md", "Constitution"],
+      "used_by": ["references/reviewer-instructions.md (plan profile)", "references/implementer-instructions.md (inputs)", "skills/run/SKILL.md (step B artifact paths)", "references/verifier-instructions.md (scenarios QS-<k>)"]
     },
     ".specify/templates/tasks-template.md": {
       "markers": ["[P]"],
@@ -126,7 +126,7 @@
     }
   },
   "artifact_conventions": {
-    "feature_dir_files": ["spec.md", "plan.md", "tasks.md", "research.md", "data-model.md", "contracts/", "checklists/requirements.md"],
+    "feature_dir_files": ["spec.md", "plan.md", "tasks.md", "research.md", "data-model.md", "contracts/", "quickstart.md", "checklists/requirements.md"],
     "ids": ["FR-###", "SC-###", "US<n>", "T###"],
     "clarifications": "## Clarifications / ### Session YYYY-MM-DD",
     "convergence_section": "## Phase N: Convergence (append-only, tasks T{max+1}... with source-refs)",

@@ -84,7 +84,7 @@ process.stdin.on('end', () => {
         `(relaunch ${run.relaunches}/${uncapped ? 'uncapped' : max}). Read ${dir}/loop-state.md and ` +
         `.uroboros/active-run.json, then resume the goal loop per the uroboros ` +
         `goal protocol (references/goal-protocol.md). When the goal is met ` +
-        `(reviewer CLEAN with evidence + green verification gate) set status ` +
+        `(reviewer CLEAN with evidence + green gate + verification passed) set status ` +
         `"complete" in .uroboros/active-run.json; if you must stop (round cap ` +
         `exhausted, unrecoverable error), set status "stopped" and report to ` +
         `the user.`,

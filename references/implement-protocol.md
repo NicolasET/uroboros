@@ -10,22 +10,22 @@ For the **implement** phase only, the maker is a dedicated subagent so it can ru
    - **Log deviations:** append every deviation the implementer reports in `notes` to `loop-state.md` under this phase's `### Deviations` (one line each, with the round number). Deviations forced by reality are exactly what the Loop Report's candidate rules are mined from — do not let them evaporate with the subagent's context.
    - If `status: BLOCKED`, it hit a product/design ambiguity: give each `blocked_on` item a run-global `B<n>` (Question protocol) and relay it to the user via `AskUserQuestion` per the Question protocol — items that turn on the same point are one question (its `current:` paraphrased as what the code says today, ids only as trailing tags), record the answers in the DECISION LOG + `loop-state.md`, and **re-dispatch** the implementer (same chosen model/effort) with the answers to continue. Repeat until `status: DONE`. *(When the run mode suppresses the question — `--auto` always, `--only-business` for technical items — resolve the `blocked_on` item via the assumption mechanism instead: record `A<n>` in the ASSUMPTION LOG and re-dispatch with that resolution.)*
 
-Then proceed to **A2** (you run the real verification gate) and **B** (dispatch the reviewer) exactly as written in the loop.
+Then proceed to **A2** (you run the gate: tests/lint/typecheck) and **B** (dispatch the reviewer) exactly as written in the loop.
 
 ## The fold (step D) for implement
 
-You do not hand-edit the code yourself. Instead, **re-dispatch the implementer** (same variant and model) with the user's answers to the reviewer's findings and any gate failures, and ask it to bring every mention of each changed concept in line across the code and tests (step D, sweep), so all code is written by the strong maker. Log any new deviations from its report as in step 3. Then re-run the gate and re-dispatch the reviewer. Loop until CLEAN-with-evidence + green gate (round cap and repeated items per step D), then run the convergence gate below.
+You do not hand-edit the code yourself. Instead, **re-dispatch the implementer** (same variant and model) with the user's answers to the reviewer's findings and any gate failures, and ask it to bring every mention of each changed concept in line across the code and tests (step D, sweep), so all code is written by the strong maker. Log any new deviations from its report as in step 3. Then re-run the gate and re-dispatch the reviewer. Loop until CLEAN-with-evidence + green gate (round cap and repeated items per step D), then run the convergence gate and verification below.
 
-## The convergence gate (closes the phase)
+## The convergence gate, then verification (closes the phase)
 
 CLEAN plus a green gate proves the written code is right; it does not prove nothing is **missing**. `speckit-converge` (spec-kit ≥ 0.11.2; optional per the compatibility check) proves that: it assesses the code against spec/plan/tasks and either appends the unbuilt work as `## Phase N: Convergence` tasks at the end of `tasks.md` (ids continue from the last `T###`, each with a source-ref such as `FR-003`, `US1/AC2`, `plan: …`, `Constitution II`) or leaves the file byte-for-byte untouched and reports **Converged**. It never edits code, spec or plan.
 
 After CLEAN-with-evidence + green gate:
 
 1. Invoke the `speckit-converge` skill inline (drive its hook directives per the hook policy).
-2. **Converged** → record `CONVERGE: converged` under this phase in `loop-state.md` and close the phase (step E).
+2. **Converged** → record `CONVERGE: converged` under this phase in `loop-state.md`, then read `${CLAUDE_PLUGIN_ROOT}/references/verify-protocol.md` and verify; the phase closes (step E) when verification does.
 3. **Tasks appended** → record the appended task ids and source-refs under this phase; re-dispatch the implementer (same chosen model/effort) with exactly those tasks; re-run the gate; re-dispatch the reviewer with those tasks and the files they changed as its `FOLDS` (step B); then run converge again. Each pass counts as a round against the cap; if the cap is exhausted with tasks still being appended, follow the command's failure handling.
-4. `speckit-converge` not installed → skip the gate, record `CONVERGE: skipped (skill not installed)`, and close on CLEAN + green gate.
+4. `speckit-converge` not installed → skip the gate, record `CONVERGE: skipped (skill not installed)`, and verify (verify protocol) on CLEAN + green gate.
 
 Convergence tasks are sourced by construction (each traces to a spec/plan/constitution ref), so they raise no user question by themselves; the reviewer audits their implementation like any other task.
 
