@@ -21,7 +21,7 @@ An agent never weakens any of these, even when a vague request would be easier t
 5. **Self-contained questions.** Every question states what the artifact says today and why it matters; internal ids (`F17`, `FR-004`) are only trailing trace tags.
 6. **Neutral options.** The plugin never marks an option as recommended or pre-chosen, so the user reads and decides instead of accepting a default without thinking. This applies to the questions the plugin asks its users — not to how an agent interviews the maintainer (below), where recommending is expected.
 7. **State on disk.** `loop-state.md` records flags, decisions, assumptions, findings and gate results; an interrupted run resumes instead of restarting.
-8. **Done is proof.** The reviewer's `CLEAN` requires evidence per criterion; implement also requires the real test/lint/typecheck gate to pass and the approved scenarios to pass when the product is used.
+8. **Done is proof.** The reviewer's `CLEAN` requires evidence per criterion; implement also requires the real test/lint/typecheck gate to pass and the approved scenarios and the probes of the requirements to pass when the product is used.
 
 ## Repository map
 
