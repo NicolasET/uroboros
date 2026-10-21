@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.16.2 — 2026-10-20
+
+- **The implement reviewer sees new files.** Its changed-file list came from `git diff --name-only`, which omits untracked files, so a file the implementer created was never in the list it audited; the verifier's list already added them. The changed-file list is now defined once, in the reviewer dispatch (step B), as `git diff --name-only` plus `git ls-files --others --exclude-standard`, and goal mode and the verify protocol refer to it.
+- **A coherence check for the repo.** `scripts/check-coherence.js` (Node standard library) derives its rules from the files themselves: every cited `references/`, `agents/`, `hooks/`, `skills/` and `scripts/` path exists; the effort variants of each agent differ only in name, description effort and `effort`; every `key: value` a prompt cites for a report key with an enum uses one of its values; JSON parses; hooks pass `node --check`; the spec-kit snapshot hashes match; the compat `.md` states the `.json`'s baseline and range; the manifest version is the latest CHANGELOG section; every flag is in the argument hint and the README. AGENTS.md step 5 now runs it. Ideas from [orca](https://github.com/stablyai/orca)'s prompt-contract tests.
+
 ## 0.16.1 — 2026-10-17
 
 - **The plugin version is on record.** No file a run left said which Uroboros release produced it, so a feature's specs could not be traced back to the plugin that shaped them. `loop-state.md` now carries `UROBOROS: <version>`, read from the plugin's `.claude-plugin/plugin.json` at the start of the run; a resume on another release appends `; resumed on <version> at <phase>`, and the Loop Report states it. A state file from an earlier release reads `before 0.16.1` from its first resume on.

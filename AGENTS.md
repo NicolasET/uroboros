@@ -33,6 +33,7 @@ An agent never weakens any of these, even when a vague request would be easier t
 - `references/model-guides/<family>-<version>.md` — per-release prompting guidance (rules in CONTRIBUTING.md, item 5).
 - `references/spec-kit-compat.md` + `.json` + `spec-kit-snapshot/` — the spec-kit contract; the `.md` and `.json` must stay in sync, and `hashes.json` is computed over LF content.
 - `hooks/goal-gate.js` — goal-mode Stop hook. Node standard library only; it must allow the stop on any doubt and only ever keep the session that owns the run alive.
+- `scripts/check-coherence.js` — the repo's coherence check (step 5), derived from the files themselves: cited paths exist, agent variants differ only in effort, the report values prompts cite match the templates, JSON parses, hooks pass `node --check`, snapshot hashes, compat `.md`/`.json`, manifest vs CHANGELOG version, documented flags. Node standard library only.
 - `.claude-plugin/plugin.json`, `marketplace.json`, `README.md`, `CHANGELOG.md`, `CONTRIBUTING.md`.
 
 ## Design rules
@@ -51,7 +52,7 @@ An agent never weakens any of these, even when a vague request would be easier t
 3. **Show the plan and the draft text**, and get an explicit approval before editing.
 4. **Edit, then sweep for coherence.** Grep every concept the change touched across the whole repo — prompts, references, agents, README, CONTRIBUTING, CHANGELOG, manifests, compat contract, hook — and update or report each mention. Re-read the full flow of every file you changed.
 5. **Verify.**
-   - Always: every JSON parses, `node --check hooks/goal-gate.js`, and — if the hook changed — its allow/block cases run against sample markers.
+   - Always: `node scripts/check-coherence.js` passes (it also parses every JSON and runs `node --check` on the hooks), and — if a hook changed — its allow/block cases run against sample markers. A false alarm is fixed in the check, never by bending the repo to it.
    - Minor and major releases: a full run of [uroboros-testbed](https://github.com/NicolasET/uroboros-testbed) against the release candidate (`npm run testbed -- --uroboros ../uroboros`), committed there as `results/<version>/`; the release notes link that result. A run cut short by the account's usage limit is re-run, never published.
 6. **Leave the changes uncommitted** until the maintainer asks to release.
 

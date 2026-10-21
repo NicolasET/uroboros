@@ -175,7 +175,7 @@ For **each** phase:
 - `RUN_MODE:` the active flags (or `default`).
 - `STATE_FILE:` the path to `FEATURE_DIR/loop-state.md` (tell B to read it first).
 - `STANDING_DECISIONS:` the path to `.uroboros/decisions.md`, if it exists.
-- `FEATURE_DIR:` and the absolute paths of the artifacts it must read (resolve from `.specify/feature.json`). For implement, also run `git diff --name-only` / `git diff --stat` and pass the changed-file list.
+- `FEATURE_DIR:` and the absolute paths of the artifacts it must read (resolve from `.specify/feature.json`). For implement, also pass `git diff --stat` and the **changed-file list**: `git diff --name-only` plus the untracked files (`git ls-files --others --exclude-standard`) — new files the implementer created are untracked, and `git diff` alone omits them. Every other step that needs the run's changed files uses this list.
 - `DECISION LOG:` the live summary of everything the user has already decided.
 - For implement: the **gate result** from A2 (pass/fail + any failing output).
 - `MODEL GUIDE:` the reviewer section of the guide for its resolved release, verbatim — only if one applies (Model/effort protocol).

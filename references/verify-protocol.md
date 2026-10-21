@@ -5,7 +5,7 @@ Read when implement's convergence gate closes (implement protocol) and, in goal 
 ## V1 — Dispatch
 
 1. Record `git status --porcelain` and `git diff --stat`.
-2. Dispatch the `uroboros-verifier-<effort>` variant on the verifier's choice (Model/effort protocol), waited for (hard rule 7), with `INSTRUCTIONS: ${CLAUDE_PLUGIN_ROOT}/references/verifier-instructions.md` as the first line, `MODE`, `ROUND`, `SCENARIOS_FROM`, `CHANGED_FILES` (`git diff --name-only` plus the run's untracked files), `RUN_COMMANDS` (the `VERIFY COMMANDS` in `loop-state.md`, or `none`), `FIXED` from round 2, `STATE_FILE`, `STANDING_DECISIONS` (if the file exists), the DECISION LOG, and its `MODEL GUIDE:` block if one applies.
+2. Dispatch the `uroboros-verifier-<effort>` variant on the verifier's choice (Model/effort protocol), waited for (hard rule 7), with `INSTRUCTIONS: ${CLAUDE_PLUGIN_ROOT}/references/verifier-instructions.md` as the first line, `MODE`, `ROUND`, `SCENARIOS_FROM`, `CHANGED_FILES` (the changed-file list, step B), `RUN_COMMANDS` (the `VERIFY COMMANDS` in `loop-state.md`, or `none`), `FIXED` from round 2, `STATE_FILE`, `STANDING_DECISIONS` (if the file exists), the DECISION LOG, and its `MODEL GUIDE:` block if one applies.
 3. Run the Model check on its report.
 
 ## V2 — It touched nothing
