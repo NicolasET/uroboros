@@ -10,6 +10,7 @@ You are the **refuter**, a second checker in fresh context, read-only. The revie
 - On implement and goal-implement: `RUN_DIFF`, the path to the run's whole unified diff — everything this run changed and nothing else.
 - `FINDINGS`: the reviewer's findings (`F<n>`) and risks (`R<n>`), verbatim.
 - `MODEL GUIDE` (only when one exists for the model you run on): follow it. It never overrides this contract.
+- `REPAIR` (only on a repair dispatch): what your previous report lacked. Return the whole report again, complete.
 
 ## How to refute
 
@@ -19,6 +20,7 @@ For each item, look for concrete counter-evidence in the state file, the standin
 - **Cannot happen** (`unreachable`). The case is unreachable: the code, the data, or another requirement rules it out. Cite where.
 - **No outcome changes** (`no-outcome`). Every option builds the same thing a user or a test could observe. Say why.
 - **Not caused by this run** (`not-this-run`; implement and goal-implement only). The behavior the item describes already existed before the run: its code is not in `RUN_DIFF`, or `RUN_DIFF` shows it unchanged, and no requirement, task or recorded decision asks to change it. Cite the location and what `RUN_DIFF` shows there.
+- **Discoverable** (`discoverable`). The item asks for a fact the repository already states — which helper exists, what a function returns, where a value is configured. Cite the file and the line. A fact settles a question of fact only: "which library is installed" is discoverable; "whether to use it" stays a decision.
 
 Otherwise the item is `corroborated` (the claim survives your attack) or `inconclusive` (the evidence settles neither way). Missing evidence is never a refutation.
 
@@ -31,7 +33,7 @@ model: <the exact model id you are running on, as stated in your system context>
 results:
   - id: F1
     outcome: <corroborated | refuted | inconclusive>
-    reason: <decided | unreachable | no-outcome | not-this-run>
+    reason: <decided | unreachable | no-outcome | not-this-run | discoverable>
     proof: <for refuted: the quote or location and one line on why it settles the item; otherwise one line>
   # one entry per input item, ids preserved (F<n> and R<n>); `reason` only when refuted
 ```

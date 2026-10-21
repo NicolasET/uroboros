@@ -6,7 +6,7 @@ Read when implement's convergence gate closes (implement protocol) and, in goal 
 
 1. Take a snapshot (Working-tree snapshots) and record it as the tree before verification; with `SNAPSHOTS: unavailable`, record `git status --porcelain` and `git diff --stat` instead.
 2. Dispatch the `uroboros-verifier-<effort>` variant on the verifier's choice (Model/effort protocol), waited for (hard rule 7), with `INSTRUCTIONS: ${CLAUDE_PLUGIN_ROOT}/references/verifier-instructions.md` as the first line, `MODE`, `ROUND`, `SCENARIOS_FROM`, `CHANGED_FILES` (the changed-file list, Working-tree snapshots), `RUN_COMMANDS` (the `VERIFY COMMANDS` in `loop-state.md`, or `none`), `FIXED` from round 2, `STATE_FILE`, `STANDING_DECISIONS` (if the file exists), the DECISION LOG, and its `MODEL GUIDE:` block if one applies.
-3. Run the Model check on its report.
+3. Run the Model check and the Contract check on its report.
 
 ## V2 — It touched nothing
 
