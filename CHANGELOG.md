@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.20.0 — 2026-10-21
+
+The verifier probes. The verifier ran the approved scenarios as written and never added one, so a rule the spec states but no Given/When/Then exercises — an error code, a refused action that must change nothing, a boundary — was checked only by the tests the implementer wrote for it.
+
+- **Probes from the requirements.** After the scenarios, the verifier derives probes from the text — in SDD each FR and each edge case, error or invalid input the spec names; in goal mode each `AC-<n>` and constraint — one per behavior, refusal and boundary, compared exactly (status, body, error text, exit code). Scenarios stay as written: a probe never changes a scenario's outcome.
+- **Invariants and the base.** After every refused action the verifier reads the data back; each item of `### Shared code touched`, and each out-of-scope surface a changed file reaches, is compared with the product as it was before the run: `BASE_TREE` extracted with `git archive` into a temporary directory outside the project and started there without installing anything or linking into the project. A base that does not start that way is recorded as not run.
+- **What a probe finds.** A probe of an outcome the text fixes that fails is a gate failure, fixed like a failed scenario. A probe that fails the same way on the base is not this run's and is listed with what the verifier saw outside the feature. A probe whose outcome the text never fixed comes back as `open`: one list question, *All stay as built* / *Change some*; each answer is a `D<n>` (under `--auto`, an `A<n>`), and the next verification reads it as fixed.
+- **Contract change (additive):** `VERIFIER-REPORT` gains `probes:` (`source`, `kind`, `expected`, `outcome`, `evidence`, `base`) and `open:`; the verifier dispatch gains `BASE_TREE`.
+
 ## 0.19.0 — 2026-10-21
 
 Evidence, not claims. A reviewer's `CLEAN` listed evidence per criterion, but nothing said whether the reviewer had checked it or was repeating the implementer's report; a new test counted as proof even if it would have passed without the feature; a report with a missing field or a criterion left out had no defined path; and the refuter could not dismiss a question the repository already answers. Ideas from [orca](https://github.com/stablyai/orca) (reviews that separate what was checked from what the lead reported; a pre-fix run that shows the new test fails), [hermes-agent](https://github.com/NousResearch/hermes-agent) (one bounded retry carrying only the missing fields) and [t3code](https://github.com/pingdotgg/t3code) ("do not ask questions that can be answered from the repo").
