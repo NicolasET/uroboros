@@ -33,6 +33,8 @@ Run Phase 0's intake exactly as written in the command (your own model guide and
 - **Acceptance criteria** — numbered `AC-1`, `AC-2`, …; each measurable and user-sourced. These are what the reviewer demands evidence for.
 - **Constraints** — what must not change on the way there.
 - **Out of scope** — explicit.
+- **Surfaces** — each surface from `SURFACES` (the command's Phase 0, step 2), in scope or out of scope.
+- **Literals** — every exact string, message, label, example, command or number the user gave, verbatim in their language (the command's Phase 0, step 6).
 - **References** — the code/mockups/libraries the user pointed at.
 
 Show the draft in full, verbatim, and get approval via `AskUserQuestion` (Approve / Edit; self-approve + `A<n>` under `--auto`). Then **BLOCKING — settle the reviewer's model/effort per the Model/effort protocol.**
@@ -40,7 +42,7 @@ Show the draft in full, verbatim, and get approval via `AskUserQuestion` (Approv
 ## G2 — Branch + state + marker
 
 - Create a feature branch with plain git (`git checkout -b goal/<slug>`); if git is unavailable, continue branchless. Do not use `speckit-git-feature`.
-- Create `.uroboros/<slug>/goal.md` and `loop-state.md` (the `UROBOROS:` line, ACTIVE FLAGS, approved goal, DECISION LOG so far, ASSUMPTION LOG so far — copied from `.uroboros/intake.md` — empty per-round section). Delete `.uroboros/intake.md` once the copy is written.
+- Create `.uroboros/<slug>/goal.md` and `loop-state.md` (the `UROBOROS:` line, ACTIVE FLAGS, approved goal, `SURFACES`, DECISION LOG so far, ASSUMPTION LOG so far — copied from `.uroboros/intake.md` — empty per-round section). Delete `.uroboros/intake.md` once the copy is written.
 - Write `.uroboros/active-run.json` per the contract above. From this point the hook keeps this session alive until you set a terminal status.
 
 ## G3 — Review the goal artifact
@@ -51,7 +53,7 @@ Dispatch the reviewer (the variant of the chosen effort, the chosen model, waite
 
 **BLOCKING — settle the implementer's model/effort per the Model/effort protocol** (flag or question; under `--auto` it was settled at the start of the run). Then read `${CLAUDE_PLUGIN_ROOT}/references/implement-protocol.md` and take the base and the gate baseline exactly as its step A, item 2, says. Then loop; at the start of each round increment `rounds_used` in `active-run.json` and open a `### Round <n>` record in `loop-state.md`:
 
-1. **Implement.** Dispatch the implementer (the variant of the chosen effort, the chosen model, waited for) with its `INSTRUCTIONS:` line (implement protocol, step A, item 3), `GOAL_FILE` (the path to `goal.md`) in place of the spec/plan/tasks paths, plus `STATE_FILE`, the DECISION LOG, its `MODEL GUIDE:` block if one applies, and — on a re-dispatch — the fixes/answers to fold. Handle the report — the Model check, `ROUND TREE`, deviations, touched checks and `BLOCKED` — exactly as in `implement-protocol.md` (step A, item 4). You never hand-edit code; every fold goes through the implementer.
+1. **Implement.** Dispatch the implementer (the variant of the chosen effort, the chosen model, waited for) with its `INSTRUCTIONS:` line (implement protocol, step A, item 3), `GOAL_FILE` (the path to `goal.md`) in place of the spec/plan/tasks paths, plus `STATE_FILE`, the DECISION LOG, its `MODEL GUIDE:` block if one applies, and — on a re-dispatch — the fixes/answers to fold. Handle the report — the Model check, `ROUND TREE`, deviations, touched checks and shared code, and `BLOCKED` — exactly as in `implement-protocol.md` (step A, item 4). You never hand-edit code; every fold goes through the implementer.
 2. **Gate.** Run the real gate commands — tests/lint/typecheck (recorded at the baseline, reused — same as step A2). A red gate means the round is not done.
 3. **Review.** Dispatch the reviewer with `PHASE: goal-implement`, `ROUND` (and `FOLDS` from round 2, per step B), the run's diff as step B passes it (`RUN_DIFF`, `FOLD_DIFF` from round 2, the diff stat and the changed-file list), the gate result, `GOAL_FILE`, `STATE_FILE`, the DECISION LOG, and its `MODEL GUIDE:` block if one applies. CLEAN requires evidence per acceptance criterion (`AC-<n>`) plus a green gate.
 4. **Fold.** Refute and relay findings/risks per steps C–D of the loop and the run mode; record every resolution; re-dispatch the implementer with them and the sweep of step D; re-run the gate; re-dispatch the reviewer.

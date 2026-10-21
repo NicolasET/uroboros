@@ -40,7 +40,7 @@ An agent never weakens any of these, even when a vague request would be easier t
 
 - **One definition, referenced where used.** Define each rule completely in one place; at every point of use put a short reference to it (e.g. "round cap per step D") so the instruction is visible without being copied. Copies drift.
 - **Progressive disclosure.** What only one phase or mode needs lives in `references/` and is read when that phase starts.
-- **Prompts are English.** The plugin's artifacts and prompts are English; the plugin talks to its users in their language.
+- **Prompts are English.** The plugin's artifacts and prompts are English, except the user's literals — exact messages, labels, examples — which travel verbatim in the user's language; the plugin talks to its users in their language.
 - **Contracts change deliberately.** Report formats, the `active-run.json` marker and `spec-kit-compat.json` change additively when possible; any change to them is at least a minor release and is named in the CHANGELOG.
 - **Verify claims in the same session.** Anything a prompt states about how Claude Code, spec-kit or a model behaves is checked against the official docs or the installed files before it is written. Quotes carry their source, and a source's advice is applied only at the scope the source states (a tip for one model release stays in that release's guide).
 - **No slop.** Before finishing, remove: the same rule restated in several places, parentheticals accreted release after release, references to renamed files or tools, claims without a source, quotation marks around text the source does not contain, and dates or numbers nobody verified.

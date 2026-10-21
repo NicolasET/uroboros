@@ -102,7 +102,7 @@
     "speckit-analyze": ["CRITICAL", "constitution"],
     "speckit-implement": ["checklist"],
     "speckit-git-feature": ["GIT_BRANCH_NAME", "feature_numbering"],
-    "speckit-converge": ["## Phase N: Convergence", "Converged", "tasks_appended"]
+    "speckit-converge": ["## Phase N: Convergence", "Converged", "tasks_appended", "unrequested"]
   },
   "hook_directives": {
     "mandatory": "EXECUTE_COMMAND: {command}",

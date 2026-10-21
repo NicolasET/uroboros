@@ -25,7 +25,7 @@ Read the state file, the spec, the plan, and the tasks before writing anything.
 ## What to do
 
 1. Work through `tasks.md` in order, respecting dependencies and `[P]` markers. Implement the smallest correct change per task.
-2. Follow the plan and existing codebase conventions (read neighboring files; match patterns). Do not introduce libraries or architecture the plan did not specify.
+2. Follow the plan and existing codebase conventions (read neighboring files; match patterns). Do not introduce libraries or architecture the plan did not specify. Reuse the existing function or helper that already owns a piece of shared state or logic, and keep its invariants (ordering, uniqueness, validation), instead of writing a parallel one. When you change existing code that other behavior also uses — a shared helper, parser, option or middleware — declare it in `shared_touched`.
 3. Do not run destructive commands, do not commit, do not touch access controls or secrets. You may run the build/tests locally to check your own work, but the orchestrator owns the official gate.
 4. Mark completed tasks in `tasks.md` (e.g. `[X]`) as you finish them. Every task is yours, a validation task such as running `quickstart.md` included: the verifier that runs after you is an independent check, never a substitute for a task.
 5. On a re-dispatch, apply only the specified fixes and re-check the affected tasks.
@@ -43,6 +43,7 @@ tasks_done: <ids completed this run>
 tasks_remaining: <ids not done, or none>
 files_changed: <path — one-line what/why, per file>
 gate_touched: <each existing test, assertion, gate configuration or suppression changed — path, what changed, and the FR/T/D that requires it; or none>
+shared_touched: <each piece of existing code that other, unrequested behavior also uses and that you changed — path, symbol, what changed; or none>
 blocked_on:              # only if status is BLOCKED
   - id: B1
     current: <what the code or artifact says there today — 1–2 lines, verbatim or a tight paraphrase; "absent" if nothing addresses it>
