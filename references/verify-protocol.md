@@ -4,13 +4,13 @@ Read when implement's convergence gate closes (implement protocol) and, in goal 
 
 ## V1 — Dispatch
 
-1. Record `git status --porcelain` and `git diff --stat`.
-2. Dispatch the `uroboros-verifier-<effort>` variant on the verifier's choice (Model/effort protocol), waited for (hard rule 7), with `INSTRUCTIONS: ${CLAUDE_PLUGIN_ROOT}/references/verifier-instructions.md` as the first line, `MODE`, `ROUND`, `SCENARIOS_FROM`, `CHANGED_FILES` (the changed-file list, step B), `RUN_COMMANDS` (the `VERIFY COMMANDS` in `loop-state.md`, or `none`), `FIXED` from round 2, `STATE_FILE`, `STANDING_DECISIONS` (if the file exists), the DECISION LOG, and its `MODEL GUIDE:` block if one applies.
+1. Take a snapshot (Working-tree snapshots) and record it as the tree before verification; with `SNAPSHOTS: unavailable`, record `git status --porcelain` and `git diff --stat` instead.
+2. Dispatch the `uroboros-verifier-<effort>` variant on the verifier's choice (Model/effort protocol), waited for (hard rule 7), with `INSTRUCTIONS: ${CLAUDE_PLUGIN_ROOT}/references/verifier-instructions.md` as the first line, `MODE`, `ROUND`, `SCENARIOS_FROM`, `CHANGED_FILES` (the changed-file list, Working-tree snapshots), `RUN_COMMANDS` (the `VERIFY COMMANDS` in `loop-state.md`, or `none`), `FIXED` from round 2, `STATE_FILE`, `STANDING_DECISIONS` (if the file exists), the DECISION LOG, and its `MODEL GUIDE:` block if one applies.
 3. Run the Model check on its report.
 
 ## V2 — It touched nothing
 
-Compare `git status --porcelain` and `git diff --stat` with V1. If a tracked file changed, do not use the report: ask per the Question protocol, listing each file and its diff stat, whether the change stays (it is reviewed in the next round as part of the feature) or the user reverts it by hand before the run continues. *(Under `--auto`: stop and report.)* New untracked files are recorded for the Loop Report with the report's `created` list.
+Take a snapshot again and compare it with V1's: `git diff --name-status <before> <after>` (without snapshots, `git status --porcelain` and `git diff --stat`). If an existing file was modified or deleted (`M`, `D`), do not use the report: ask per the Question protocol, listing each file and its diff stat, whether the change stays (it is reviewed in the next round as part of the feature) or the user reverts it by hand before the run continues. *(Under `--auto`: stop and report.)* Added files (`A`; without snapshots, new untracked files) are recorded for the Loop Report with the report's `created` list.
 
 ## V3 — Read the results
 

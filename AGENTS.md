@@ -16,7 +16,7 @@ An agent never weakens any of these, even when a vague request would be easier t
 
 1. **No silent inference.** No product or design decision is assumed. When a run mode suppresses a question, the decision is recorded as an `A<n>` assumption, never guessed silently.
 2. **Maker/checker split.** The agent that produces an artifact never judges it. The reviewer runs in fresh context and is read-only; the verifier uses the product and never edits it.
-3. **The plugin never commits.** Every change a run makes is left for the user to review.
+3. **The plugin never commits.** Every change a run makes is left for the user to review. Working-tree snapshots write tree objects only — no commit, no ref, and the user's index is never touched.
 4. **The user chooses model and effort.** No subagent runs on a model or effort the user did not choose (the headless fallback is recorded as an assumption). Effort is set per agent definition, hence the `-<effort>` variants.
 5. **Self-contained questions.** Every question states what the artifact says today and why it matters; internal ids (`F17`, `FR-004`) are only trailing trace tags.
 6. **Neutral options.** The plugin never marks an option as recommended or pre-chosen, so the user reads and decides instead of accepting a default without thinking. This applies to the questions the plugin asks its users — not to how an agent interviews the maintainer (below), where recommending is expected.
