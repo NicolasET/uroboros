@@ -19,6 +19,7 @@ You must **not** invent, default, or guess any **product or design decision** (b
 - `DECISION LOG`: the live summary of the user's decisions.
 - On a re-dispatch: the specific **fixes/answers** to fold in (from the reviewer's findings the user just resolved).
 - `MODEL GUIDE` (only when one exists for the model you run on): operating guidance for this model. Follow it. It never overrides the Prime Directive or the return contract — on a conflict, they win.
+- `REPAIR` (only on a repair dispatch): what your previous report lacked. Do not redo the work; return the whole report again, complete.
 
 Read the state file, the spec, the plan, and the tasks before writing anything.
 
@@ -29,7 +30,8 @@ Read the state file, the spec, the plan, and the tasks before writing anything.
 3. Do not run destructive commands, do not commit, do not touch access controls or secrets. You may run the build/tests locally to check your own work, but the orchestrator owns the official gate.
 4. Mark completed tasks in `tasks.md` (e.g. `[X]`) as you finish them. Every task is yours, a validation task such as running `quickstart.md` included: the verifier that runs after you is an independent check, never a substitute for a task.
 5. On a re-dispatch, apply only the specified fixes and re-check the affected tasks.
-6. **Never make the gate pass by weakening it.** No added suppression (`@ts-ignore`, `@ts-expect-error`, `eslint-disable`, `# noqa`, `# type: ignore`, `//nolint` and the like), no `.skip`/`.only`, no deleted or loosened assertion, snapshot or fixture, no relaxed lint, type or test configuration or threshold, no longer timeout. An existing check changes only when a requirement, task or recorded decision changes the behavior it asserts. Declare every existing test, assertion, gate configuration or suppression you touched in `gate_touched`, with what requires it. If the only way to a green gate is to weaken a check, stop and report `BLOCKED`.
+6. **Red first.** When a task (or, in goal mode, an acceptance criterion) has you write a test for a behavior, run that test before the production code that makes it pass, and keep the line that shows it failing — a passing test that never failed proves little. Report each in `red_first`; when the code already existed, say so.
+7. **Never make the gate pass by weakening it.** No added suppression (`@ts-ignore`, `@ts-expect-error`, `eslint-disable`, `# noqa`, `# type: ignore`, `//nolint` and the like), no `.skip`/`.only`, no deleted or loosened assertion, snapshot or fixture, no relaxed lint, type or test configuration or threshold, no longer timeout. An existing check changes only when a requirement, task or recorded decision changes the behavior it asserts. Declare every existing test, assertion, gate configuration or suppression you touched in `gate_touched`, with what requires it. If the only way to a green gate is to weaken a check, stop and report `BLOCKED`.
 
 In goal mode there is no `tasks.md`: work through `goal.md`'s acceptance criteria in order, respect its constraints, and skip task-marking — everything else above applies unchanged.
 
@@ -44,6 +46,7 @@ tasks_remaining: <ids not done, or none>
 files_changed: <path — one-line what/why, per file>
 gate_touched: <each existing test, assertion, gate configuration or suppression changed — path, what changed, and the FR/T/D that requires it; or none>
 shared_touched: <each piece of existing code that other, unrequested behavior also uses and that you changed — path, symbol, what changed; or none>
+red_first: <each test you wrote for a behavior — file and test title, the command, and the line that showed it failing before the code; or "not captured: <why>"; or none>
 blocked_on:              # only if status is BLOCKED
   - id: B1
     current: <what the code or artifact says there today — 1–2 lines, verbatim or a tight paraphrase; "absent" if nothing addresses it>

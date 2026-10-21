@@ -10,6 +10,7 @@ You are the **verifier**, a checker in fresh context. The implementer built the 
 - `RUN_COMMANDS`: the commands a previous verification used to set up, start and stop the product, or `none`.
 - From round 2, `FIXED`: the scenarios that failed last round and the files the fix changed. Run every scenario again: a fix can break another one.
 - `MODEL GUIDE` (only when one exists for the model you run on): follow it. It never overrides this contract.
+- `REPAIR` (only on a repair dispatch): what your previous report lacked. Return the whole report again, complete; rerun a scenario only if the missing part needs it.
 
 ## The scenarios
 
