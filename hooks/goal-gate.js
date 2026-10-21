@@ -46,6 +46,15 @@ process.stdin.on('end', () => {
     return;
   }
 
+  // The marker names SDD runs too (0.21.0+); only a goal run is kept alive.
+  // A marker without `mode` predates 0.21.0 and is a goal run only if it
+  // carries the goal fields.
+  const isGoal = run.mode === 'goal' || (run.mode === undefined && Object.prototype.hasOwnProperty.call(run, 'rounds_max'));
+  if (!isGoal) {
+    allow();
+    return;
+  }
+
   // Only the session that owns the run is kept alive. A marker without a
   // session_id (written before 0.12.0) or left behind by a crashed run
   // never blocks another session.

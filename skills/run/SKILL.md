@@ -120,12 +120,19 @@ GIT_INDEX_FILE="$idx" git add -A && GIT_INDEX_FILE="$idx" git write-tree
 - **The changed-file list** is `git diff --name-only <BASE TREE> <ROUND TREE n>`; every step that needs the run's changed files uses it.
 - **Fallback.** Without git, when `write-tree` fails, or when a recorded tree is gone (`git cat-file -e <id>` fails: `git gc` prunes unreferenced objects once they are older than `gc.pruneExpire`, two weeks by default), record `SNAPSHOTS: unavailable — <reason>` and pass no `RUN_DIFF`. The changed-file list is then `git diff --name-only` plus `git ls-files --others --exclude-standard`, or, without git, the union of the implementer reports' `files_changed`.
 
+## Active run — a long run is not lost
+
+- **The marker.** `.uroboros/active-run.json` names the run in progress, in both modes: `{"mode": "sdd" | "goal", "feature": "<name>", "dir": "<FEATURE_DIR, or .uroboros/<slug>>", "state_file": "<dir>/loop-state.md", "session_id": "${CLAUDE_SESSION_ID}", "status": "active"}`; goal mode adds its round fields (goal protocol, Stop-hook contract). Phase 0.5 writes it, goal mode in G2. One active run per repo: if the marker already shows `status: "active"` for another `session_id`, ask per the Question protocol before writing yours — *Take it over* (the other session's run is no longer kept alive or resumed) / *Stop this run*. *(Under `--auto`: take it over, recorded as `A<n>`.)* A resume writes this session's id into `session_id`; a `--goal` resume takes over only a goal marker (`mode: "goal"`, or no `mode` and a `rounds_max` key — written before 0.21.0), an SDD resume only an `sdd` one. Set `status` to `"complete"` when the run closes and `"stopped"` when it stops; a run paused to resume later stays `"active"`.
+- **After compaction** the plugin's SessionStart hook (`hooks/resume-context.js`) hands the owning session this file's path, the state file and, in goal mode, the goal protocol, to re-read before going on with the resume check.
+- **Open dispatches.** Before every Agent call, write `DISPATCH OPEN: <role> <phase or round> <session_id>` in `loop-state.md`, and remove it when you read the report. A resume that finds one open: the same session (the Stop hook relaunched it, or its context was compacted) keeps waiting for the completion notification; another session dispatches it again and never assumes its result.
+- **Stale results.** From implement on, every gate run, review and verification records the snapshot it ran on (`on tree <id>`, Working-tree snapshots), and `LAST TREE: <id>` in `loop-state.md` follows the latest recorded snapshot — each `ROUND TREE`, and the one each gate run and verification ran on. A resume with no open dispatch takes a snapshot; if it differs from `LAST TREE`, it lists the files (`git diff --name-status <LAST TREE> <snapshot>`) and asks the question of verify protocol V2 before anything recorded is used. *(Under `--auto`: stop and report.)*
+
 ## Phase −1 — Resume check (before anything else)
 
 Decide fresh-vs-resume from the input (after stripping flags):
 - If the remainder of `$ARGUMENTS` contains a new idea, this is a **fresh run** → go to Phase 0. (Do not resume a prior feature just because its state file exists.)
 - If it is empty or says to resume/continue and `.uroboros/intake.md` exists, the run was interrupted during intake: restore its ACTIVE FLAGS (overridden by any flags on this invocation), decision tree and logs, apply your own model guide (Model/effort protocol), check the plugin version (Plugin version), and continue Phase 0 from the recorded frontier.
-- Otherwise, if it is empty or says to resume/continue, resolve the active feature from `.specify/feature.json` and read `FEATURE_DIR/loop-state.md`. If it shows an **incomplete** run, restore the recorded ACTIVE FLAGS (overridden by any flags on this invocation), re-resolve the MODEL GUIDES per the Model/effort protocol, check the plugin version (Plugin version), and resume from the last incomplete phase using the recorded DECISION LOG and resolutions — do not restart from intake (resuming implement: follow the implement protocol's resume rule). If there is no incomplete state to resume, tell the user there is nothing to resume and ask for an idea.
+- Otherwise, if it is empty or says to resume/continue, resolve the active feature from `.specify/feature.json` and read `FEATURE_DIR/loop-state.md`. If it shows an **incomplete** run, restore the recorded ACTIVE FLAGS (overridden by any flags on this invocation), re-resolve the MODEL GUIDES per the Model/effort protocol, check the plugin version (Plugin version), take over the marker (Active run), check open dispatches, stale results and base drift (implement protocol, step A, item 2), and resume from the last incomplete phase using the recorded DECISION LOG and resolutions — do not restart from intake (resuming implement: follow the implement protocol's resume rule). If there is no incomplete state to resume, tell the user there is nothing to resume and ask for an idea.
 
 ## Spec-kit compatibility check (fresh runs and resumes)
 
@@ -162,9 +169,9 @@ Goal mode (`--goal`) skips this section — it does not use spec-kit.
 
 ## Phase 0.5 — Branch + initialize state
 
-Invoke the `speckit-git-feature` skill once with the approved feature description to create the feature branch. If git is unavailable or the skill is not installed, continue without a branch. The `before_specify` hook that would create it again is skipped by the hook policy (rule 2).
+Record the current branch and its commit as `BASE BRANCH: <name> @ <sha>` (`none` without git or on a detached HEAD). Invoke the `speckit-git-feature` skill once with the approved feature description to create the feature branch. If git is unavailable or the skill is not installed, continue without a branch. The `before_specify` hook that would create it again is skipped by the hook policy (rule 2).
 
-Then create `FEATURE_DIR/loop-state.md` with: the feature/branch, the ACTIVE FLAGS, the run's size, the approved English prompt, and — copied from `.uroboros/intake.md` — the `UROBOROS:` line, `SURFACES`, the DECISION LOG so far (intake answers), the ASSUMPTION LOG so far (if any) and the DEFERRED list, plus an empty per-phase section for specify → implement. Delete `.uroboros/intake.md` once the copy is written. Update `loop-state.md` at every step below.
+Then create `FEATURE_DIR/loop-state.md` with: the feature/branch, the ACTIVE FLAGS, the run's size, the approved English prompt, and — copied from `.uroboros/intake.md` — the `UROBOROS:` line, `SURFACES`, the DECISION LOG so far (intake answers), the ASSUMPTION LOG so far (if any) and the DEFERRED list, plus an empty per-phase section for specify → implement. Add the `BASE BRANCH` line. Delete `.uroboros/intake.md` once the copy is written. Update `loop-state.md` at every step below. Then write the marker (Active run).
 
 ## Phases 1–6 — the loop
 
@@ -223,10 +230,11 @@ For **each** phase:
 
 ## Final report
 
-After implement passes (clean review + green gate + verification), read `${CLAUDE_PLUGIN_ROOT}/references/loop-report.md` and produce the Loop Report it specifies. Do not commit anything.
+After implement passes (clean review + green gate + verification), set the marker's `status` to `"complete"`, read `${CLAUDE_PLUGIN_ROOT}/references/loop-report.md` and produce the Loop Report it specifies. Do not commit anything.
 
 ## Failure handling
 
+- Every stop below but the last sets the marker's `status` to `"stopped"` (Active run).
 - If a phase skill errors, stop the loop, record the failure point in `loop-state.md`, report where it failed and why, and leave the artifacts as-is.
 - If the gate (tests/lint/typecheck) or a verification scenario or probe cannot pass after the round cap, stop, record it, and hand the failing output to the user — do not paper over a red gate.
-- If context is running low mid-pipeline, finish the current phase cleanly, write state to `loop-state.md`, and tell the user to re-run `/uroboros:run` — the Phase −1 resume check will pick up from the recorded phase instead of restarting.
+- If context is running low mid-pipeline, finish the current phase cleanly, write state to `loop-state.md`, and tell the user to re-run `/uroboros:run` — the Phase −1 resume check will pick up from the recorded phase instead of restarting. The marker stays `"active"`.
