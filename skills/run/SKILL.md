@@ -98,7 +98,14 @@ Product and behavior decisions the user has made binding for the whole project, 
 
 - **Read** it at the start of every run, fresh or resumed, in both modes. Pass its path as `STANDING_DECISIONS:` in every reviewer and implementer dispatch. A standing decision is user-sourced in every run: never ask it again; where an artifact applies it, cite it as `(standing S<n>)`.
 - **Contradiction.** When the idea or an answer contradicts a standing decision, ask per the Question protocol: keep it, set it aside for this feature only, or change it for the project (then rewrite the entry).
-- **Grow** it only at the end of a run, with the user's answer (Loop Report). Never under `--auto`. The file is left uncommitted like every other change.
+- **Grow, replace and retire** it only at the end of a run, with the user's answer (Loop Report). Never under `--auto`. A retired entry moves to a `## Retired` section at the end of the file with the run and the date it was retired; it is never deleted and no longer binds. The file is left uncommitted like every other change.
+
+## Project notes — `.uroboros/project-notes.md`
+
+Technical facts earlier runs found about this project, so a run does not rediscover them: gate commands, `VERIFY COMMANDS`, setup traps, flaky tests. Facts only — never a decision, a preference or a guess. One entry per line: `- N<n> <the fact> (seen <feature>, <date>; verified by <how>)`.
+
+- **Read** it at the start of every run, fresh or resumed, in both modes. A2 consults it before discovering the gate commands, and verify V1 before passing `RUN_COMMANDS: none`. Before you rely on an entry, verify it again the way it says; an entry that no longer holds is corrected or removed at the end of the run.
+- **Write** it at the end of the run, without a question, in every mode — what the run verified, not what it assumed. The Loop Report lists each entry added, changed or removed. The file is left uncommitted like every other change.
 
 ## Plugin version — the `UROBOROS:` line
 
@@ -191,7 +198,7 @@ For **each** phase:
 **A. Run the phase** *(phases 1–5 only)*. Invoke the skill inline and let it produce its artifact. Drive through any hook directive yourself (rule 2). Do not pause. For implement (phase 6), the protocol file replaces this step.
 
 **A2. Run the hard gate (the part that can actually fail).**
-- **implement only:** run the project's real gate commands — the test suite, linter, and type checker. **Discover them once** (from `package.json` scripts / the plan / the constitution; e.g. the configured `test`, `lint`, `typecheck`/build scripts), **record the exact commands in `loop-state.md`, and reuse that recorded list on every subsequent round and on resume** — do not re-derive them each time; running a known script is cheaper than reasoning it out again. Capture pass/fail and the failing output. A failure means the phase is **not done** no matter how good the artifact looks — record it and treat it as a blocking item in step D (loop back to fix). Never advance past a red gate. Two kinds of failure no longer count toward it: a check dropped under `--auto` per step D, and a failure the gate baseline recorded before the run and the user (or `--auto`) left out of the gate (implement protocol, step A).
+- **implement only:** run the project's real gate commands — the test suite, linter, and type checker. **Discover them once** (the project notes first, then `package.json` scripts / the plan / the constitution; e.g. the configured `test`, `lint`, `typecheck`/build scripts), **record the exact commands in `loop-state.md`, and reuse that recorded list on every subsequent round and on resume** — do not re-derive them each time; running a known script is cheaper than reasoning it out again. Capture pass/fail and the failing output. A failure means the phase is **not done** no matter how good the artifact looks — record it and treat it as a blocking item in step D (loop back to fix). Never advance past a red gate. Two kinds of failure no longer count toward it: a check dropped under `--auto` per step D, and a failure the gate baseline recorded before the run and the user (or `--auto`) left out of the gate (implement protocol, step A).
 - **design phases (specify/clarify/plan/tasks):** the gate is B's `CLEAN`-*with-evidence* in step C. There is no suite to run, so the proof is B citing positive evidence for every success criterion / checklist item. `analyze` has no artifact gate; its findings are the gate.
 
 **B. Dispatch the reviewer.** Use the Agent tool to call the `uroboros-reviewer-<effort>` variant with the model from the Model/effort protocol (per-phase mapping if the user gave one). Put in its prompt:

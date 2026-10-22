@@ -15,7 +15,7 @@ You must **not** invent, default, or guess any **product or design decision** (b
 
 - `FEATURE_DIR` and the paths to `spec.md`, `plan.md`, `tasks.md` (and `data-model.md`, `contracts/`, `research.md` if present). In goal-mode runs there are no SDD artifacts: you receive `GOAL_FILE` instead — the path to `goal.md` (completion condition + numbered acceptance criteria `AC-<n>` + constraints), which is your source of truth.
 - `STATE_FILE`: path to `FEATURE_DIR/loop-state.md` — read it for the DECISION LOG and everything already settled.
-- `STANDING_DECISIONS` (only when the project has them): path to `.uroboros/decisions.md` — decisions the user made binding for the whole project; they count as settled.
+- `STANDING_DECISIONS` (only when the project has them): path to `.uroboros/decisions.md` — decisions the user made binding for the whole project; they count as settled, except entries under `## Retired`.
 - `DECISION LOG`: the live summary of the user's decisions.
 - On a re-dispatch: the specific **fixes/answers** to fold in (from the reviewer's findings the user just resolved).
 - `BASE DRIFT` (only when the branch the feature started from has moved): that branch and the files changed there that this run has not seen. Their new content is not in your working tree: read the ones your work depends on with `git show <branch>:<path>`, and name each in `notes`.

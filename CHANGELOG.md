@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.22.0 — 2026-10-22
+
+What the project remembers. `.uroboros/decisions.md` could only grow: the end-of-run offer could propose a decision an entry already stated, a run that set a standing decision aside left it binding for the next one, and nothing could be retired. Candidate rules had no check against what the constitution or `CLAUDE.md` already says, and could come from a failure of the machine rather than the project. And each run rediscovered the same technical facts — the gate commands, how to start the product, a setup trap.
+
+- **Standing decisions: no copies, and a way out.** The Loop Report leaves out a decision an `S<n>` already states and offers *replace S<n> with …* instead of a second entry. In the same question it lists each standing decision the run set aside or contradicted, with what the run decided instead: *Keep them as they are* / *Change or retire some*. Retired entries move to `## Retired` with the run and the date; they are never deleted and no longer bind (reviewer and implementer read them so). Under `--auto`, both lists are shown for the user to apply by hand.
+- **Candidate rules: general, justified, new.** Each candidate is one general rule with one sentence on why; the report reads the constitution and `CLAUDE.md` first and leaves out a rule they already state; an environment failure, a transient error or a dead end the run backed out of never becomes one.
+- **Project notes.** New `.uroboros/project-notes.md` holds technical facts only — gate commands, `VERIFY COMMANDS`, setup traps, flaky tests — one line each: `- N<n> <fact> (seen <feature>, <date>; verified by <how>)`. Every run reads it; A2 and verify V1 consult it before rediscovering; each entry is verified again before it is relied on, and corrected or removed when it no longer holds. The run writes it at the end without a question, in every mode — facts, not decisions — and the Loop Report lists each entry added, changed or removed. Left uncommitted.
+- **Contract change (additive):** `.uroboros/decisions.md` gains a `## Retired` section; new file `.uroboros/project-notes.md`.
+
 ## 0.21.0 — 2026-10-22
 
 Long runs that are not lost. A run that outlives one session's context or one session — a compaction, a crash, a resume the next day — picked up from `loop-state.md`, but nothing told a compacted session to re-read it, a result recorded before files changed was trusted as is, a subagent whose report never arrived was neither waited for nor re-run, the branch the feature started from could move underneath it, and an SDD run had no marker, so two runs in one repository did not see each other.
