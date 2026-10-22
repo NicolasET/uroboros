@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.23.0 — 2026-10-22
+
+- **"I don't know" to a list keeps everything as it is.** "I don't know" is recorded as a deferred decision, which reaches the user again at the specify review. A list question — minor cases, values, the verifier's open behaviors — comes after that point, and in goal mode there is no later phase at all: a goal run in the testbed stopped when the oracle answered "No sé" to a minor-cases list. On a list question, "I don't know" now takes the option that changes nothing (*Leave them out of this feature*, *All stay as written*, *All stay as built*), recorded per item as a `D<n>` with the answer verbatim, marked `kept on "I don't know"` — nothing deferred, no value guessed. The Loop Report lists those items in their own section, so the user can still decide them. Both modes.
+
 ## 0.22.1 — 2026-10-22
 
 - **Project notes hold facts about the project, not the machine.** In the 0.22.0 testbed run, `.uroboros/project-notes.md` recorded that the machine had no `pwsh` — true of that machine, wrong for the next person who runs the project. The rule now leaves out facts about the machine a run happened on: a tool installed or missing there, its operating system, a path outside the project.
