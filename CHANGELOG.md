@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.22.1 — 2026-10-22
+
+- **Project notes hold facts about the project, not the machine.** In the 0.22.0 testbed run, `.uroboros/project-notes.md` recorded that the machine had no `pwsh` — true of that machine, wrong for the next person who runs the project. The rule now leaves out facts about the machine a run happened on: a tool installed or missing there, its operating system, a path outside the project.
+
 ## 0.22.0 — 2026-10-22
 
 What the project remembers. `.uroboros/decisions.md` could only grow: the end-of-run offer could propose a decision an entry already stated, a run that set a standing decision aside left it binding for the next one, and nothing could be retired. Candidate rules had no check against what the constitution or `CLAUDE.md` already says, and could come from a failure of the machine rather than the project. And each run rediscovered the same technical facts — the gate commands, how to start the product, a setup trap.

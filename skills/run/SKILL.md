@@ -102,7 +102,7 @@ Product and behavior decisions the user has made binding for the whole project, 
 
 ## Project notes — `.uroboros/project-notes.md`
 
-Technical facts earlier runs found about this project, so a run does not rediscover them: gate commands, `VERIFY COMMANDS`, setup traps, flaky tests. Facts only — never a decision, a preference or a guess. One entry per line: `- N<n> <the fact> (seen <feature>, <date>; verified by <how>)`.
+Technical facts earlier runs found about this project, so a run does not rediscover them: gate commands, `VERIFY COMMANDS`, setup traps, flaky tests. Facts about the project only — never about the machine the run happened on (a tool installed or missing there, its operating system, a path outside the project), and never a decision, a preference or a guess. One entry per line: `- N<n> <the fact> (seen <feature>, <date>; verified by <how>)`.
 
 - **Read** it at the start of every run, fresh or resumed, in both modes. A2 consults it before discovering the gate commands, and verify V1 before passing `RUN_COMMANDS: none`. Before you rely on an entry, verify it again the way it says; an entry that no longer holds is corrected or removed at the end of the run.
 - **Write** it at the end of the run, without a question, in every mode — what the run verified, not what it assumed. The Loop Report lists each entry added, changed or removed. The file is left uncommitted like every other change.
