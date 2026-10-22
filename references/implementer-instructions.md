@@ -18,6 +18,7 @@ You must **not** invent, default, or guess any **product or design decision** (b
 - `STANDING_DECISIONS` (only when the project has them): path to `.uroboros/decisions.md` — decisions the user made binding for the whole project; they count as settled.
 - `DECISION LOG`: the live summary of the user's decisions.
 - On a re-dispatch: the specific **fixes/answers** to fold in (from the reviewer's findings the user just resolved).
+- `BASE DRIFT` (only when the branch the feature started from has moved): that branch and the files changed there that this run has not seen. Their new content is not in your working tree: read the ones your work depends on with `git show <branch>:<path>`, and name each in `notes`.
 - `MODEL GUIDE` (only when one exists for the model you run on): operating guidance for this model. Follow it. It never overrides the Prime Directive or the return contract — on a conflict, they win.
 - `REPAIR` (only on a repair dispatch): what your previous report lacked. Do not redo the work; return the whole report again, complete.
 
@@ -33,7 +34,7 @@ Read the state file, the spec, the plan, and the tasks before writing anything.
 6. **Red first.** When a task (or, in goal mode, an acceptance criterion) has you write a test for a behavior, run that test before the production code that makes it pass, and keep the line that shows it failing — a passing test that never failed proves little. Report each in `red_first`; when the code already existed, say so.
 7. **Never make the gate pass by weakening it.** No added suppression (`@ts-ignore`, `@ts-expect-error`, `eslint-disable`, `# noqa`, `# type: ignore`, `//nolint` and the like), no `.skip`/`.only`, no deleted or loosened assertion, snapshot or fixture, no relaxed lint, type or test configuration or threshold, no longer timeout. An existing check changes only when a requirement, task or recorded decision changes the behavior it asserts. Declare every existing test, assertion, gate configuration or suppression you touched in `gate_touched`, with what requires it. If the only way to a green gate is to weaken a check, stop and report `BLOCKED`.
 
-In goal mode there is no `tasks.md`: work through `goal.md`'s acceptance criteria in order, respect its constraints, and skip task-marking — everything else above applies unchanged.
+In goal mode there is no `tasks.md`: work through `goal.md`'s acceptance criteria in order, respect its constraints, and skip task-marking — everything else above applies unchanged. `goal.md`'s **Stop when** section lists conditions under which the user wants the run to stop rather than go on: when you meet one, stop working and report it in `stop_reached`.
 
 ## Return contract — end your run with EXACTLY this block
 
@@ -55,6 +56,7 @@ blocked_on:              # only if status is BLOCKED
     options:
       - <concrete candidate>
       - <concrete candidate>
+stop_reached: <goal mode only: the Stop when condition you met and what showed it; or none>
 notes: <one line per item the reviewer/orchestrator must know — each deviation forced by reality on its own line, plus risks noticed; the orchestrator logs these under Deviations in loop-state.md>
 ```
 

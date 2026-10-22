@@ -32,7 +32,7 @@ An agent never weakens any of these, even when a vague request would be easier t
 - `references/implement-protocol.md`, `verify-protocol.md`, `goal-protocol.md`, `loop-report.md` — read by the orchestrator only when that part of the run arrives (progressive disclosure).
 - `references/model-guides/<family>-<version>.md` — per-release prompting guidance (rules in CONTRIBUTING.md, item 5).
 - `references/spec-kit-compat.md` + `.json` + `spec-kit-snapshot/` — the spec-kit contract; the `.md` and `.json` must stay in sync, and `hashes.json` is computed over LF content.
-- `hooks/goal-gate.js` — goal-mode Stop hook. Node standard library only; it must allow the stop on any doubt and only ever keep the session that owns the run alive.
+- `hooks/goal-gate.js` — goal-mode Stop hook; `hooks/resume-context.js` — SessionStart (`compact`) hook that points the owning session back at its state. Node standard library only; on any doubt they allow the stop or emit nothing, and they only ever act for the session that owns the run.
 - `scripts/check-coherence.js` — the repo's coherence check (step 5), derived from the files themselves: cited paths exist, agent variants differ only in effort, the report values prompts cite match the templates, JSON parses, hooks pass `node --check`, snapshot hashes, compat `.md`/`.json`, manifest vs CHANGELOG version, documented flags. Node standard library only.
 - `.claude-plugin/plugin.json`, `marketplace.json`, `README.md`, `CHANGELOG.md`, `CONTRIBUTING.md`.
 
