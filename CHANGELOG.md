@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.23.2 — 2026-10-23
+
+- **One decision per item kept on "I don't know".** When the answer to a list question is "I don't know", every item is recorded as its own `D<n>`, never one for the whole list. In the 0.23.1 testbed run, the verifier's two open behaviors were kept as built under a single `D11`; the Loop Report still listed both, but the decision log could not tell them apart.
+- **Testbed ([results/0.23.2+87f4d84.dirty](https://github.com/NicolasET/uroboros-testbed/tree/main/results/0.23.2%2B87f4d84.dirty), scenario v8):** the first result of scenario v8, in which the oracle answers from the user's facts alone — it had sometimes quoted the testbed's scoring back into its answers — and sets the contradicted standing decisions aside while the work runs; nothing earlier measured the same way. Default 5/5 ambiguities, 11/11 hidden tests, 3/3 runtime, 14 questions; `--auto` 5/5, 8/11, 3/3; `--goal` 5/5, 11/11, 3/3, 12 questions; compat passes. Both contradictions were asked, `.uroboros/decisions.md` ended as answered with no duplicate entry, and no session reached outside its workspace. No list was answered "I don't know" in this run, so the rule this release clarifies did not come up.
+
 ## 0.23.1 — 2026-10-23
 
 - **A decision that replaces a standing decision the run set aside is offered once.** The end-of-run offer lists the run's new decisions and, in the same question, each standing decision the run set aside with what it decided instead. A decision that replaced a set-aside entry could appear in both lists: in the testbed's scenario v7 goal run, "the owning seller and admins may pause and resume" was offered as a new entry while S1 ("only admins change a listing's status") was offered for rewriting with the same decision, and accepting both left a new S5 repeating the rewritten S1. It is now offered only in the set-aside list; a decision that changes any other standing decision is still offered as *replace S<n> with …*.
