@@ -13,7 +13,7 @@ Operating guidance for each uroboros role, distilled from the source above and a
 ## Orchestrator
 
 - Give each dispatch the whole task in one prompt: every path, the DECISION LOG, and the answers or fixes to fold. Never rely on a follow-up message to complete a dispatch.
-- End every implementer dispatch with one line stating what done means: `Done means: <the task or AC ids of this dispatch> implemented, <the recorded gate commands> pass, no open BLOCKED item.`
+- End every implementer dispatch with one line stating what done means: `Done means: <the task or AC ids of this dispatch> implemented, <the recorded gate commands; in a wave, the tests that cover those tasks> pass, no open BLOCKED item.`
 - Never write "think carefully", "think step by step" or similar in a dispatch or a question — the model always thinks before it replies and decides how much.
 - Never ask a subagent to reproduce or show its internal reasoning. It trips the model's safeguards, which can reroute the request to an older model.
 - At intake, when the idea has user-visible UI, ask for a concrete list of patterns to avoid (e.g. cream backgrounds, italic accent words, numbered labels, monospace styling, pill-shaped buttons) instead of accepting "not generic" or "clean". Carry the list into the specify prompt — `goal.md` constraints in goal mode — as explicit constraints. It is a question like any other: the run-mode rules apply.

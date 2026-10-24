@@ -90,8 +90,8 @@
       "used_by": ["references/reviewer-instructions.md (plan profile)", "references/implementer-instructions.md (inputs)", "skills/run/SKILL.md (step B artifact paths)", "references/verifier-instructions.md (scenarios QS-<k>)"]
     },
     ".specify/templates/tasks-template.md": {
-      "markers": ["[P]"],
-      "used_by": ["references/reviewer-instructions.md (tasks profile)", "references/implementer-instructions.md (task order, [X] marking)"]
+      "markers": ["[P]", "Foundational", "User Story", "Polish", "Dependencies & Execution Order"],
+      "used_by": ["references/reviewer-instructions.md (tasks profile)", "references/implementer-instructions.md (task order, [X] marking)", "references/implement-protocol.md (waves)"]
     }
   },
   "skill_markers": {
