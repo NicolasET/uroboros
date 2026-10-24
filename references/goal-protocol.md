@@ -4,11 +4,11 @@ Goal mode replaces the six-phase SDD pipeline with a **completion condition**: i
 
 ## State layout (replaces FEATURE_DIR)
 
-- `.uroboros/<slug>/goal.md` — the approved goal artifact (see G1).
+- `.uroboros/<slug>/goal.md` — the goal artifact (see G1).
 - `.uroboros/<slug>/loop-state.md` — same role as in the pipeline: ACTIVE FLAGS, DECISION LOG, ASSUMPTION LOG, cached gate commands, per-round records.
 - `.uroboros/active-run.json` — the run's marker (the command's Active run), with the Stop-hook fields below. One active run per repo, in either mode.
 
-`<slug>` is a short kebab-case name derived from the approved goal (e.g. `pause-listing`).
+`<slug>` is a short kebab-case name derived from the goal (e.g. `pause-listing`).
 
 ## Stop-hook contract — how the run survives turn ends
 
@@ -26,9 +26,9 @@ Your obligations as orchestrator:
 - **Set a terminal `status`** — `"complete"` when the run closes (G5), `"stopped"` when you stop deliberately (round cap exhausted, unrecoverable error, user told you to stop). An `"active"` marker left behind keeps relaunching the session — never end a goal run without updating it.
 - When the hook relaunches you mid-run, treat it as a **resume**: re-read `active-run.json` and `loop-state.md`, re-resolve the MODEL GUIDES per the Model/effort protocol, check the plugin version (the command's Plugin version), check open dispatches, stale results and base drift (the command's Active run; implement protocol, step A, item 2), and continue from the recorded point. A fresh `/uroboros:run --goal` with no idea resumes the same way if `active-run.json` shows an active goal run — first write this session's id into its `session_id` so the hook keeps this session alive from now on. This replaces the Phase −1 check. With no active run but a `.uroboros/intake.md` draft, the run was interrupted during intake: restore it, apply your own model guide, check the plugin version, and continue G1 from the recorded frontier.
 
-## G1 — Intake (idea → approved goal.md)
+## G1 — Intake (idea → goal.md)
 
-Run Phase 0's intake exactly as written in the command (your own model guide and the standing decisions read first, intake draft in `.uroboros/intake.md`, blind-spot pass, decision tree, frontier rounds, facts looked up rather than asked, invited references, shared-understanding check, run-mode question rules) — but the deliverable is a draft **`goal.md`** instead of a specify prompt. `goal.md` has no clarification phase after it, so a **DEFERRED** decision cannot pass through: before the draft, put each one back to the user with narrower, concrete options, or — if they choose so — move it to **Out of scope**. Nothing deferred remains when `goal.md` is approved.
+Run Phase 0's intake exactly as written in the command (your own model guide, the standing decisions and the reviewer's model/effort first, intake draft in `.uroboros/intake.md`, blind-spot pass, decision tree, frontier rounds, facts looked up rather than asked, invited references, shared-understanding check, run-mode question rules) — but the deliverable is **`goal.md`** instead of a specify prompt. `goal.md` has no clarification phase after it, so a **DEFERRED** decision cannot pass through: before the shared-understanding check, put each one back to the user with narrower, concrete options, or — if they choose so — move it to **Out of scope**. Nothing deferred remains when the summary is confirmed.
 
 - **Goal condition** — one measurable end state with a **stated check**, verifiable from command output or observable behavior (e.g. "`npm test` exits 0 and `GET /listings/:id` returns `paused: true` after the pause call"), not from intent.
 - **Acceptance criteria** — numbered `AC-1`, `AC-2`, …; each measurable and user-sourced. These are what the reviewer demands evidence for.
@@ -36,15 +36,16 @@ Run Phase 0's intake exactly as written in the command (your own model guide and
 - **Stop when** — conditions under which the user wants the run to stop rather than go on (e.g. a schema migration turns out to be needed), in their words, or `none`. Ask it at intake, per the Question protocol, with *None* as one option; "I don't know" here is recorded as `none` — with no condition named, the run stops only on its own rules — not DEFERRED. *(Under `--auto`: `none`, recorded as `A<n>`.)*
 - **Out of scope** — explicit.
 - **Surfaces** — each surface from `SURFACES` (the command's Phase 0, step 2), in scope or out of scope.
+- **Readers** — each reader from `READERS` (the command's Phase 0, step 2) and how it treats the new state, as recorded.
 - **Literals** — every exact string, message, label, example, command or number the user gave, verbatim in their language (the command's Phase 0, step 6).
 - **References** — the code/mockups/libraries the user pointed at.
 
-Show the draft in full, verbatim, and get approval via `AskUserQuestion` (Approve / Edit; self-approve + `A<n>` under `--auto`). Then **BLOCKING — settle the reviewer's model/effort per the Model/effort protocol.**
+The shared-understanding check (the command's Phase 0, step 5) is intake's one confirmation; in goal mode its summary also states, in plain words, the goal condition with its check, each acceptance criterion and the Stop when conditions. Draft `goal.md` in the intake draft from what it confirms — nothing it does not state; it is not approved separately, and G2 writes it to disk.
 
 ## G2 — Branch + state + marker
 
 - Record the current branch and its commit as `BASE BRANCH: <name> @ <sha>` (`none` without git or on a detached HEAD), then create a feature branch with plain git (`git checkout -b goal/<slug>`); if git is unavailable, continue branchless. Do not use `speckit-git-feature`.
-- Create `.uroboros/<slug>/goal.md` and `loop-state.md` (the `UROBOROS:` line, ACTIVE FLAGS, approved goal, `SURFACES`, `BASE BRANCH`, DECISION LOG so far, ASSUMPTION LOG so far — copied from `.uroboros/intake.md` — empty per-round section). Delete `.uroboros/intake.md` once the copy is written.
+- Create `.uroboros/<slug>/goal.md` and `loop-state.md` (the idea verbatim, the `UROBOROS:` line, ACTIVE FLAGS, the reviewer's model/effort, the goal, `SURFACES`, `READERS`, `BASE BRANCH`, DECISION LOG so far, ASSUMPTION LOG so far — copied from `.uroboros/intake.md` — empty per-round section). Delete `.uroboros/intake.md` once the copy is written, and tell the user in one line where `goal.md` can be read.
 - Write `.uroboros/active-run.json` per the contract above. From this point the hook keeps this session alive until you set a terminal status.
 
 ## G3 — Review the goal artifact
