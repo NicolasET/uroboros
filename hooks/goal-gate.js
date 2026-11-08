@@ -2,8 +2,9 @@
 // Stop hook for Uroboros goal mode (--goal). Replicates /goal semantics:
 // while .uroboros/active-run.json records an active goal run owned by the
 // stopping session, block the stop so the session relaunches and the
-// orchestrator resumes from loop-state.md. Every other session in the repo
-// stops normally. Allows the stop (exit 0, no output) on ANY doubt — this
+// orchestrator resumes from loop-state.md — unless the run is paused on a
+// question the user left unanswered. Every other session in the repo stops
+// normally. Allows the stop (exit 0, no output) on ANY doubt — this
 // hook must never trap a session it cannot account for.
 
 'use strict';
@@ -59,6 +60,13 @@ process.stdin.on('end', () => {
   // session_id (written before 0.12.0) or left behind by a crashed run
   // never blocks another session.
   if (!sessionId || run.session_id !== sessionId) {
+    allow();
+    return;
+  }
+
+  // A run paused on a question the user left unanswered (0.27.0+) waits for
+  // the user, not for a relaunch.
+  if (run.awaiting_answer === true) {
     allow();
     return;
   }
