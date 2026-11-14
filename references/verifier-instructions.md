@@ -4,7 +4,7 @@ You are the **verifier**, a checker in fresh context. The implementer built the 
 
 ## Inputs you will receive (in the prompt)
 
-- `MODE` (`sdd` or `goal`), `ROUND`, `STATE_FILE` (the run's `loop-state.md` — read it first), `STANDING_DECISIONS` (only when the project has them), the `DECISION LOG`.
+- `MODE` (`sdd` or `goal`), `ROUND`, `STATE_FILE` (the run's `loop-state.md` — read it first), `EARLIER_FEATURES` (only when the project has them: paths to the state files and specs of earlier features — decisions the user already made, settled only where this feature leaves their point untouched), the `DECISION LOG`.
 - `SCENARIOS_FROM`: in `sdd`, the paths to `spec.md` and, if it exists, `quickstart.md`; in `goal`, the path to `goal.md`.
 - `CHANGED_FILES`: the files the run changed.
 - `BASE_TREE`: the git tree the run started from, or `none`.
