@@ -28,7 +28,7 @@ Your obligations as orchestrator:
 
 ## G1 — Intake (idea → goal.md)
 
-Run Phase 0's intake exactly as written in the command (your own model guide, the earlier features, the glossary, `LANGUAGE` and the reviewer's model/effort first, intake draft in `.uroboros/intake.md`, blind-spot pass, decision tree, frontier rounds, facts looked up rather than asked, invited references, shared-understanding check, run-mode question rules) — but the deliverable is **`goal.md`** instead of a specify prompt. `goal.md` has no clarification phase after it, so a **DEFERRED** decision cannot pass through: before the shared-understanding check, put each one back to the user with narrower, concrete options, or — if they choose so — move it to **Out of scope**. Nothing deferred remains when the summary is confirmed.
+Run Phase 0's intake exactly as written in the command (your own model guide, the earlier features, the glossary, `LANGUAGE` and the reviewer's model/effort first, intake draft in `.uroboros/intake.md`, blind-spot pass, decision tree, frontier rounds, facts looked up rather than asked, invited references, shared-understanding check, run-mode question rules) — but the deliverable is **`goal.md`** instead of a specify prompt. The split question and the parts protocol apply as written; a part session's draft leads to its own `goal.md`. `goal.md` has no clarification phase after it, so a **DEFERRED** decision cannot pass through: before the shared-understanding check, put each one back to the user with narrower, concrete options, or — if they choose so — move it to **Out of scope**. Nothing deferred remains when the summary is confirmed.
 
 - **Goal condition** — one measurable end state with a **stated check**, verifiable from command output or observable behavior (e.g. "`npm test` exits 0 and `GET /listings/:id` returns `paused: true` after the pause call"), not from intent.
 - **Acceptance criteria** — numbered `AC-1`, `AC-2`, …; each measurable and user-sourced. These are what the reviewer demands evidence for.
@@ -67,4 +67,4 @@ On CLEAN-with-evidence + green gate, read `${CLAUDE_PLUGIN_ROOT}/references/veri
 
 ## G5 — Close
 
-Set `status: "complete"` in `.uroboros/active-run.json`, write the closing record in `loop-state.md`, then read `references/loop-report.md` and produce the Loop Report with per-**round** sections in place of per-phase ones. Do not commit anything.
+Set `status: "complete"` in `.uroboros/active-run.json`, write the closing record in `loop-state.md`, then read `references/loop-report.md` and produce the Loop Report with per-**round** sections in place of per-phase ones. A run whose state file holds `PARTS` first waits for them (parts protocol, P5). Do not commit anything.
