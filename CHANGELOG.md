@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.30.1 — 2026-11-15
+
+- **A part the app will not start is proposed as a card.** In the first real run with parts, the Claude desktop app refused to start the part's session — it starts one directly only in a turn that began with the user's own words, and parts start after the main part's branch exists, in a later turn. The run proposed the part as a card the user opened, which the parts protocol did not say. P3 now says so: propose each part as a card, tell the user, record it as `proposed` until its marker exists — the main part waits for it as for a running part — and name in the joint report two parts that took the same feature number because their cards were opened together.
+
 ## 0.30.0 — 2026-11-14
 
 A split idea runs its parts at the same time. Intake already asked whether an idea too big for one run should be split, but every part beyond the first was only written down as a future run for the user to start.
