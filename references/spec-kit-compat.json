@@ -75,7 +75,7 @@
       "used_by": ["skills/run/SKILL.md (Phase -1 resume, step B artifact paths)"]
     },
     ".specify/memory/constitution.md": {
-      "used_by": ["references/reviewer-instructions.md (analyze profile)", "references/loop-report.md (candidate rules)"]
+      "used_by": ["references/reviewer-instructions.md (analyze profile)", "references/loop-report.md (candidate rules)", "references/implement-protocol.md (judging sources)"]
     },
     ".specify/extensions.yml": {
       "keys": ["hooks"],
@@ -130,7 +130,8 @@
     "ids": ["FR-###", "SC-###", "US<n>", "T###"],
     "clarifications": "## Clarifications / ### Session YYYY-MM-DD",
     "convergence_section": "## Phase N: Convergence (append-only, tasks T{max+1}... with source-refs)",
-    "checklists_since_1_0": "checklists/requirements.md is maintained by specify/clarify; implement treats checklist markers as a read-only gate (changed in 1.0.0)"
+    "checklists_since_1_0": "checklists/requirements.md is maintained by specify/clarify; implement treats checklist markers as a read-only gate (changed in 1.0.0)",
+    "judging_sources": "every feature_dir_files entry is a judging source: the implementer only marks tasks.md, and any other change during a build step is restored (references/implement-protocol.md, step A, items 2 and 4)"
   },
   "snapshot": {
     "dir": "references/spec-kit-snapshot/1.1.0",
