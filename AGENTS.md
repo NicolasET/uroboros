@@ -17,7 +17,7 @@ An agent never weakens any of these, even when a vague request would be easier t
 1. **No silent inference.** No product or design decision is assumed. When a run mode suppresses a question, the decision is recorded as an `A<n>` assumption, never guessed silently.
 2. **Maker/checker split.** The agent that produces an artifact never judges it. The reviewer runs in fresh context and is read-only; the verifier uses the product and never edits it. The maker never edits what judges it, and the checkers read the rules as they were before the change.
 3. **The plugin never commits.** Every change a run makes is left for the user to review. Working-tree snapshots write tree objects only — no commit, no ref, and the user's index is never touched.
-4. **The user chooses model and effort.** No subagent runs on a model or effort the user did not choose (the headless fallback is recorded as an assumption). Effort is set per agent definition, hence the `-<effort>` variants.
+4. **The user chooses model and effort.** No subagent runs on a model or effort the user did not choose (the headless fallback is recorded as an assumption). Model and effort are passed on every dispatch.
 5. **Self-contained, plain questions.** Every question states what the artifact says today and why it matters, in everyday words and with the user's own names for things; internal ids (`F17`, `FR-004`) are only trailing trace tags.
 6. **Neutral options.** The plugin never marks an option as recommended or pre-chosen, so the user reads and decides instead of accepting a default without thinking. This applies to the questions the plugin asks its users — not to how an agent interviews the maintainer (below), where recommending is expected.
 7. **State on disk.** `loop-state.md` records flags, decisions, assumptions, findings and gate results; an interrupted run resumes instead of restarting.
@@ -27,13 +27,14 @@ An agent never weakens any of these, even when a vague request would be easier t
 
 - `skills/run/SKILL.md` — the orchestrator: flags, Hard rules, Model/effort protocol, Question protocol, phases. Always loaded when a run starts, so keep it lean.
 - `skills/compat/SKILL.md` — report-only audit of a project's spec-kit against the contract.
-- `agents/uroboros-{reviewer,implementer,verifier}-{low,medium,high,xhigh,max}.md` — thin variants that differ only in `effort`; they point to the role instructions; the reviewer variants also run the refuter role.
+- `agents/uroboros-{reviewer,implementer,verifier}.md` — one thin agent per role; it points to the role instructions and its frontmatter is only the headless fallback, since model and effort are passed on every dispatch; the reviewer agent also runs the refuter role.
 - `references/reviewer-instructions.md`, `references/refuter-instructions.md`, `references/implementer-instructions.md`, `references/verifier-instructions.md` — the role bodies, including the `LOOP-REVIEW-FINDINGS`, `LOOP-REFUTER-RESULTS`, `IMPLEMENTER-REPORT` and `VERIFIER-REPORT` contracts the orchestrator parses.
 - `references/implement-protocol.md`, `verify-protocol.md`, `goal-protocol.md`, `parts-protocol.md`, `loop-report.md` — read by the orchestrator only when that part of the run arrives (progressive disclosure).
 - `references/model-guides/<family>-<version>.md` — per-release prompting guidance (rules in CONTRIBUTING.md, item 5).
 - `references/spec-kit-compat.md` + `.json` + `spec-kit-snapshot/` — the spec-kit contract; the `.md` and `.json` must stay in sync, and `hashes.json` is computed over LF content.
 - `hooks/goal-gate.js` — goal-mode Stop hook; `hooks/resume-context.js` — SessionStart (`compact`) hook that points the owning session back at its state. `hooks/no-recommended.js` — PreToolUse hook that refuses a run's `AskUserQuestion` with an option marked as recommended (invariant 6). Node standard library only; on any doubt they allow the stop or emit nothing, and they only ever act for the session that owns the run.
-- `scripts/check-coherence.js` — the repo's coherence check (step 5), derived from the files themselves: cited paths exist, agent variants differ only in effort, the report values prompts cite match the templates, JSON parses, hooks pass `node --check`, snapshot hashes, compat `.md`/`.json`, manifest vs CHANGELOG version, documented flags. Node standard library only.
+- `scripts/check-coherence.js` — the repo's coherence check (step 5), derived from the files themselves: cited paths exist, one thin agent per role, the report values prompts cite match the templates, JSON parses, hooks pass `node --check`, snapshot hashes, compat `.md`/`.json`, manifest vs CHANGELOG version, documented flags. Node standard library only.
+- `evals/` — a small `claude plugin eval` suite: requests that must and must not start the run skill. It guards the skill's description; it does not replace the testbed.
 - `.claude-plugin/plugin.json`, `marketplace.json`, `README.md`, `CHANGELOG.md`, `CONTRIBUTING.md`.
 
 ## Design rules

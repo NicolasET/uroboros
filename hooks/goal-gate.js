@@ -5,6 +5,12 @@
 // orchestrator resumes from loop-state.md. Every other session in the repo
 // stops normally. Allows the stop (exit 0, no output) on ANY doubt — this
 // hook must never trap a session it cannot account for.
+//
+// A turn that ends while a subagent of the run is still working is a wait,
+// not a stop: the completion notification wakes the session. The stop input
+// lists what is in flight (`background_tasks`), so that turn end is allowed
+// and not counted as a relaunch. `stop_hook_active` is not read: the relaunch
+// cap below already bounds how often this hook blocks.
 
 'use strict';
 
@@ -15,6 +21,10 @@ function allow() {
   process.exit(0);
 }
 
+function isSubagent(task) {
+  return Boolean(task) && typeof task.type === 'string' && task.type.toLowerCase() === 'subagent';
+}
+
 let raw = '';
 process.stdin.setEncoding('utf8');
 process.stdin.on('data', (chunk) => {
@@ -23,10 +33,12 @@ process.stdin.on('data', (chunk) => {
 process.stdin.on('end', () => {
   let cwd = process.cwd();
   let sessionId = '';
+  let backgroundTasks; // undefined: this Claude Code version does not report them
   try {
     const input = JSON.parse(raw);
     if (typeof input.cwd === 'string' && input.cwd) cwd = input.cwd;
     if (typeof input.session_id === 'string') sessionId = input.session_id;
+    if (Array.isArray(input.background_tasks)) backgroundTasks = input.background_tasks;
   } catch (_) {
     // stdin was not JSON — fall back to process cwd; no session id means
     // the owner check below allows the stop
@@ -63,6 +75,13 @@ process.stdin.on('end', () => {
     return;
   }
 
+  // A subagent in flight will wake the session with its report: allow the
+  // stop without spending a relaunch.
+  if (backgroundTasks && backgroundTasks.some(isSubagent)) {
+    allow();
+    return;
+  }
+
   // rounds_max: null = uncapped (--auto without --rounds); the owning session
   // relaunches until the orchestrator sets a terminal status. Missing or
   // invalid = 3.
@@ -90,7 +109,7 @@ process.stdin.on('end', () => {
       decision: 'block',
       reason:
         `Uroboros goal run "${run.feature || 'unknown'}" is still active ` +
-        `(relaunch ${run.relaunches}/${uncapped ? 'uncapped' : max}). Read ${dir}/loop-state.md and ` +
+        `(relaunch ${run.relaunches}/${uncapped ? 'uncapped' : max}${backgroundTasks ? '; no subagent is running' : ''}). Read ${dir}/loop-state.md and ` +
         `.uroboros/active-run.json, then resume the goal loop per the uroboros ` +
         `goal protocol (references/goal-protocol.md). When the goal is met ` +
         `(reviewer CLEAN with evidence + green gate + verification passed) set status ` +

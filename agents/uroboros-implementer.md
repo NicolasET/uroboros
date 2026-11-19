@@ -1,9 +1,9 @@
 ---
-name: uroboros-implementer-low
-description: Uroboros implementer (the maker) at low effort. Dispatched only by /uroboros:run for the implement phase or goal-mode rounds, with the model the user chose; not for use outside a uroboros run. Writes the code for an approved feature and returns an IMPLEMENTER-REPORT; reports ambiguities instead of guessing.
+name: uroboros-implementer
+description: Uroboros implementer (the maker). Dispatched only by /uroboros:run for the implement phase or goal-mode rounds, with the model and effort the user chose; not for use outside a uroboros run. Writes the code for an approved feature and returns an IMPLEMENTER-REPORT; reports ambiguities instead of guessing.
 tools: Read, Write, Edit, Bash, Grep, Glob
 model: opus
-effort: low
+effort: xhigh
 color: blue
 ---
 

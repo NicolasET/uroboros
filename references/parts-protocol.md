@@ -17,6 +17,7 @@ After step 5 confirms, write `.uroboros/parts/<slug>/intake.md` for each part th
 
 - The idea verbatim, then `PART: <slug> — <scope>`, `MAIN: <absolute path of this checkout>` and `BASE: <branch> @ <sha>` (the current HEAD).
 - ACTIVE FLAGS, the `UROBOROS:` line, `LANGUAGE`, every model/effort choice, `EARLIER FEATURES`, `USER MESSAGES`, `SURFACES`, `READERS` and the size.
+- Every `IDEA ITEMS` entry, each marked with the part that carries it: this part builds its own, and the reviewer reads the others as carried elsewhere.
 - Every DECISION LOG and DEFERRED entry that applies to the part, under the id it has here; the non-goals, the other parts among them.
 - `INTAKE: confirmed`. No `SESSION:` line: the part session writes its own.
 

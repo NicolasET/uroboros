@@ -2,8 +2,10 @@
 family: opus
 version: "5.5"
 model_id: claude-opus-5-5
-source: https://claude.dev/blog/getting-the-most-out-of-opus-5-5/
-retrieved: 2026-09-25
+source:
+  - https://claude.dev/blog/getting-the-most-out-of-opus-5-5/
+  - https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5-5
+retrieved: 2026-11-18
 ---
 
 # Model guide — Opus 5.5
@@ -17,6 +19,7 @@ Operating guidance for each uroboros role, distilled from the source above and a
 - Never write "think carefully", "think step by step" or similar in a dispatch or a question — the model always thinks before it replies and decides how much.
 - Never ask a subagent to reproduce or show its internal reasoning. It trips the model's safeguards, which can reroute the request to an older model.
 - At intake, when the idea has user-visible UI, ask for a concrete list of patterns to avoid (e.g. cream backgrounds, italic accent words, numbered labels, monospace styling, pill-shaped buttons) instead of accepting "not generic" or "clean". Carry the list into the specify prompt — `goal.md` constraints in goal mode — as explicit constraints. It is a question like any other: the run-mode rules apply.
+- Never end a turn with a summary that announces the next phase without starting it, an offer to continue, or a list of decisions none of which blocks the rest of the work. A turn ends only on a question to the user, while a dispatched subagent's report is awaited, or when the run closes.
 
 ## Reviewer
 

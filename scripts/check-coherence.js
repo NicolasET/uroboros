@@ -15,6 +15,7 @@ const ROOT = path.resolve(__dirname, '..');
 const SNAPSHOT_DIR = path.join(ROOT, 'references', 'spec-kit-snapshot');
 const REPORT_NAMES = ['LOOP-REVIEW-FINDINGS', 'LOOP-REFUTER-RESULTS', 'IMPLEMENTER-REPORT', 'VERIFIER-REPORT'];
 const EFFORTS = ['low', 'medium', 'high', 'xhigh', 'max'];
+const ROLES = ['reviewer', 'implementer', 'verifier'];
 
 // ---------------------------------------------------------------- files
 
@@ -51,7 +52,7 @@ function checkCitedPaths() {
     text.split(/\r?\n/).forEach((line, i) => {
       for (const match of line.matchAll(cited)) {
         const after = line.slice(match.index + match[0].length);
-        if (/^[<{*|]/.test(after)) continue; // a template: model-guides/<family>-<version>.md, uroboros-reviewer-low|medium|….md
+        if (/^[<{*]/.test(after)) continue; // a template: model-guides/<family>-<version>.md
         const target = match[1].replace(/[.,:]+$/, '');
         if (!fs.existsSync(path.join(ROOT, target))) failures.push(`${rel(file)}:${i + 1} cites ${target}, which does not exist`);
       }
@@ -60,29 +61,36 @@ function checkCitedPaths() {
   return failures;
 }
 
-/** The effort variants of each agent role are identical except their name, the effort word in their description, and effort. */
-function checkAgentVariants() {
+/**
+ * One agent per role, and nothing else: effort is passed on each dispatch, so no per-effort variant exists.
+ * Each agent is a thin pointer to its role file — its frontmatter names it and sets a default model and effort,
+ * and its body sends the subagent to the `INSTRUCTIONS:` line instead of carrying rules of its own.
+ */
+function checkAgents() {
   const failures = [];
-  const roles = new Map();
-  for (const file of ALL_FILES.filter((f) => rel(f).startsWith('agents/') && f.endsWith('.md'))) {
-    const match = /^uroboros-(\w+)-(\w+)\.md$/.exec(path.basename(file));
-    if (!match) continue;
-    const [, role, effort] = match;
-    const effortWord = new RegExp(`\\b${effort}\\b`, 'g');
-    const normalized = read(file)
-      .split(/\r?\n/)
-      .map((line) => (/^(name|description|effort):/.test(line) ? line.replace(effortWord, '<effort>') : line))
-      .join('\n');
-    if (!roles.has(role)) roles.set(role, new Map());
-    roles.get(role).set(effort, normalized);
+  const expected = new Set(ROLES.map((role) => `uroboros-${role}.md`));
+  const found = ALL_FILES.filter((f) => rel(f).startsWith('agents/') && f.endsWith('.md'));
+  for (const file of found) {
+    if (!expected.has(path.basename(file))) failures.push(`agents: ${rel(file)} is not one of ${[...expected].join(', ')}`);
   }
-  for (const [role, variants] of roles) {
-    const missing = EFFORTS.filter((e) => !variants.has(e));
-    if (missing.length) failures.push(`agents: role ${role} has no variant for ${missing.join(', ')}`);
-    const [first, ...rest] = [...variants.entries()];
-    for (const [effort, text] of rest) {
-      if (text !== first[1]) failures.push(`agents: uroboros-${role}-${effort}.md differs from uroboros-${role}-${first[0]}.md beyond name, description effort and effort`);
+  for (const role of ROLES) {
+    const file = path.join(ROOT, 'agents', `uroboros-${role}.md`);
+    if (!fs.existsSync(file)) {
+      failures.push(`agents: uroboros-${role}.md is missing`);
+      continue;
     }
+    const parts = /^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/.exec(read(file));
+    if (!parts) {
+      failures.push(`agents: uroboros-${role}.md has no frontmatter`);
+      continue;
+    }
+    const [, frontmatter, body] = parts;
+    const field = (key) => (new RegExp(`^${key}:\\s*(.+)$`, 'm').exec(frontmatter) || [])[1];
+    if (field('name') !== `uroboros-${role}`) failures.push(`agents: uroboros-${role}.md is named ${field('name')}`);
+    if (!field('model')) failures.push(`agents: uroboros-${role}.md sets no default model`);
+    if (!EFFORTS.includes(field('effort'))) failures.push(`agents: uroboros-${role}.md has effort ${field('effort')}; expected one of ${EFFORTS.join(', ')}`);
+    if (!body.includes('INSTRUCTIONS:')) failures.push(`agents: uroboros-${role}.md does not point to its INSTRUCTIONS: line`);
+    if (body.trim().split(/\r?\n/).length > 3) failures.push(`agents: uroboros-${role}.md carries more than a pointer — role rules live in references/${role}-instructions.md`);
   }
   return failures;
 }
@@ -214,7 +222,7 @@ function checkFlags() {
 
 const CHECKS = [
   ['cited paths exist', checkCitedPaths],
-  ['agent variants differ only in effort', checkAgentVariants],
+  ['one thin agent per role', checkAgents],
   ['report values match the templates', checkReportValues],
   ['JSON parses', checkJson],
   ['hooks pass node --check', checkHookSyntax],

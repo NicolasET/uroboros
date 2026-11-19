@@ -1,6 +1,6 @@
 ---
-name: uroboros-reviewer-high
-description: Uroboros reviewer (the checker) at high effort. Dispatched only by /uroboros:run after each phase, with the model the user chose; not for use outside a uroboros run. Read-only zero-inference audit of the just-produced artifact; returns a LOOP-REVIEW-FINDINGS report. Also dispatched as the refuter of the questions a run would ask, returning LOOP-REFUTER-RESULTS.
+name: uroboros-reviewer
+description: Uroboros reviewer (the checker). Dispatched only by /uroboros:run after each phase, with the model and effort the user chose; not for use outside a uroboros run. Read-only zero-inference audit of the just-produced artifact; returns a LOOP-REVIEW-FINDINGS report. Also dispatched as the refuter of the questions a run would ask, returning LOOP-REFUTER-RESULTS.
 tools: Read, Grep, Glob
 model: fable
 effort: high
