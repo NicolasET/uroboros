@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// Stop hook for Uroboros goal mode (--goal). Replicates /goal semantics:
-// while .uroboros/active-run.json records an active goal run owned by the
+// Stop hook for a Uroboros run. Replicates /goal semantics:
+// while .uroboros/active-run.json records an active run owned by the
 // stopping session, block the stop so the session relaunches and the
 // orchestrator resumes from loop-state.md. Every other session in the repo
 // stops normally. Allows the stop (exit 0, no output) on ANY doubt — this
@@ -58,11 +58,12 @@ process.stdin.on('end', () => {
     return;
   }
 
-  // The marker names SDD runs too (0.21.0+); only a goal run is kept alive.
-  // A marker without `mode` predates 0.21.0 and is a goal run only if it
-  // carries the goal fields.
-  const isGoal = run.mode === 'goal' || (run.mode === undefined && Object.prototype.hasOwnProperty.call(run, 'rounds_max'));
-  if (!isGoal) {
+  // Every run writes `mode: "goal"`. A marker with another `mode` belongs to
+  // a run of spec-kit's pipeline, which left the plugin in 1.0.0 and is never
+  // kept alive. A marker without `mode` predates 0.21.0 and is a run only if
+  // it carries the round fields.
+  const isRun = run.mode === 'goal' || (run.mode === undefined && Object.prototype.hasOwnProperty.call(run, 'rounds_max'));
+  if (!isRun) {
     allow();
     return;
   }
@@ -108,10 +109,10 @@ process.stdin.on('end', () => {
     JSON.stringify({
       decision: 'block',
       reason:
-        `Uroboros goal run "${run.feature || 'unknown'}" is still active ` +
+        `Uroboros run "${run.feature || 'unknown'}" is still active ` +
         `(relaunch ${run.relaunches}/${uncapped ? 'uncapped' : max}${backgroundTasks ? '; no subagent is running' : ''}). Read ${dir}/loop-state.md and ` +
-        `.uroboros/active-run.json, then resume the goal loop per the uroboros ` +
-        `goal protocol (references/goal-protocol.md). When the goal is met ` +
+        `.uroboros/active-run.json, then resume the run per the uroboros ` +
+        `run skill (skills/run/SKILL.md, Phase −1). When the goal is met ` +
         `(reviewer CLEAN with evidence + green gate + verification passed) set status ` +
         `"complete" in .uroboros/active-run.json; if you must stop (round cap ` +
         `exhausted, unrecoverable error), set status "stopped" and report to ` +

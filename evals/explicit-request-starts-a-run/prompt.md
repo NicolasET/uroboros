@@ -1,5 +1,5 @@
 ---
-description: An explicit request starts the run skill; in a folder without spec-kit the run stops at the compatibility check and says so.
+description: An explicit request starts the run skill, and the run goes on in a folder that has no spec-kit without asking for it.
 max_turns: 15
 allowed_tools: [Read, Glob, Grep, Skill, AskUserQuestion]
 ---

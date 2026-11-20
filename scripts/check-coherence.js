@@ -8,11 +8,9 @@
 
 const fs = require('fs');
 const path = require('path');
-const crypto = require('crypto');
 const { spawnSync } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..');
-const SNAPSHOT_DIR = path.join(ROOT, 'references', 'spec-kit-snapshot');
 const REPORT_NAMES = ['LOOP-REVIEW-FINDINGS', 'LOOP-REFUTER-RESULTS', 'IMPLEMENTER-REPORT', 'VERIFIER-REPORT'];
 const EFFORTS = ['low', 'medium', 'high', 'xhigh', 'max'];
 const ROLES = ['reviewer', 'implementer', 'verifier'];
@@ -33,11 +31,10 @@ function walk(dir) {
 const ALL_FILES = walk(ROOT);
 const rel = (file) => path.relative(ROOT, file).split(path.sep).join('/');
 const read = (file) => fs.readFileSync(file, 'utf8');
-const isSnapshot = (file) => file.startsWith(SNAPSHOT_DIR + path.sep);
 
-/** Markdown the plugin and its maintainers read — the third-party snapshot excluded. */
+/** Markdown the plugin and its maintainers read. */
 function pluginMarkdown() {
-  return ALL_FILES.filter((f) => f.endsWith('.md') && !isSnapshot(f));
+  return ALL_FILES.filter((f) => f.endsWith('.md'));
 }
 
 // ---------------------------------------------------------------- checks
@@ -156,45 +153,6 @@ function checkHookSyntax() {
   return failures;
 }
 
-/** Each snapshot's hashes.json matches the sha256 of its files' LF content, and lists every skill file of the snapshot. */
-function checkSnapshotHashes() {
-  const failures = [];
-  if (!fs.existsSync(SNAPSHOT_DIR)) return failures;
-  for (const entry of fs.readdirSync(SNAPSHOT_DIR, { withFileTypes: true }).filter((e) => e.isDirectory())) {
-    const dir = path.join(SNAPSHOT_DIR, entry.name);
-    const hashesFile = path.join(dir, 'hashes.json');
-    if (!fs.existsSync(hashesFile)) {
-      failures.push(`${rel(dir)} has no hashes.json`);
-      continue;
-    }
-    const hashes = JSON.parse(read(hashesFile));
-    for (const [name, expected] of Object.entries(hashes)) {
-      const file = path.join(dir, name);
-      if (!fs.existsSync(file)) {
-        failures.push(`${rel(hashesFile)} lists ${name}, which does not exist`);
-        continue;
-      }
-      const actual = crypto.createHash('sha256').update(read(file).replace(/\r\n/g, '\n'), 'utf8').digest('hex');
-      if (actual !== expected) failures.push(`${rel(file)} does not match its hash in ${rel(hashesFile)}`);
-    }
-    for (const file of ALL_FILES.filter((f) => f.startsWith(dir + path.sep) && path.basename(f) === 'SKILL.md')) {
-      const name = path.relative(dir, file).split(path.sep).join('/');
-      if (!(name in hashes)) failures.push(`${rel(file)} is not listed in ${rel(hashesFile)}`);
-    }
-  }
-  return failures;
-}
-
-/** The compat contract's human-readable half states the baseline and the supported range its JSON half records. */
-function checkCompatSync() {
-  const json = JSON.parse(read(path.join(ROOT, 'references', 'spec-kit-compat.json')));
-  const md = read(path.join(ROOT, 'references', 'spec-kit-compat.md'));
-  const expected = { 'baseline.version': json.baseline.version, 'baseline.line': json.baseline.line, supported_range: json.supported_range };
-  return Object.entries(expected)
-    .filter(([, value]) => !md.includes(value))
-    .map(([key, value]) => `references/spec-kit-compat.md does not state ${key} "${value}" from spec-kit-compat.json`);
-}
-
 /** The manifest version is the CHANGELOG's latest section. */
 function checkVersion() {
   const version = JSON.parse(read(path.join(ROOT, '.claude-plugin', 'plugin.json'))).version;
@@ -226,8 +184,6 @@ const CHECKS = [
   ['report values match the templates', checkReportValues],
   ['JSON parses', checkJson],
   ['hooks pass node --check', checkHookSyntax],
-  ['snapshot hashes match', checkSnapshotHashes],
-  ['compat .md matches .json', checkCompatSync],
   ['plugin.json matches CHANGELOG', checkVersion],
   ['flags are documented', checkFlags],
 ];

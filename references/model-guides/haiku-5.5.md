@@ -8,7 +8,7 @@ retrieved: 2026-11-18
 
 # Model guide — Haiku 5.5
 
-Operating guidance for each uroboros role, distilled from the source above and applied only when that role runs on this exact release (see the Model/effort protocol in `skills/run/SKILL.md`). It tunes how a role works on this model; it never overrides the Hard rules, the Model/effort protocol, the Question protocol, the zero-inference directive, or a return contract — on a conflict the plugin rule wins.
+Operating guidance for each uroboros role, distilled from the source above and applied only when that role runs on this exact release (see the model protocol, `references/model-protocol.md`). It tunes how a role works on this model; it never overrides the Hard rules, the model protocol, the Question protocol, the zero-inference directive, or a return contract — on a conflict the plugin rule wins.
 
 ## Orchestrator
 
@@ -20,9 +20,9 @@ Operating guidance for each uroboros role, distilled from the source above and a
 
 ## Implementer
 
-- Keep working until every task of the dispatch is done. Stop to return only when you cannot go on without a decision (`BLOCKED`) or before a risky step.
-- When the tasks of the dispatch are done and checked, stop and report. Do not add features, docs or refactors that no task asks for. If you think one would help, say so in `notes` instead of doing it.
-- Before you report `DONE`, run a real check that exercises each change: the tests that cover your tasks, the type-checker or the build. A syntax-only check, or a command that failed to start, does not count. If no real check can run here, say in `notes` which one you did not run and why.
+- Keep working until every criterion of the dispatch is done. Stop to return only when you cannot go on without a decision (`BLOCKED`) or before a risky step.
+- When the criteria of the dispatch are done and checked, stop and report. Do not add features, docs or refactors that no criterion asks for. If you think one would help, say so in `notes` instead of doing it.
+- Before you report `DONE`, run a real check that exercises each change: the tests that cover your criteria, the type-checker or the build. A syntax-only check, or a command that failed to start, does not count. If no real check can run here, say in `notes` which one you did not run and why.
 
 ## Verifier
 

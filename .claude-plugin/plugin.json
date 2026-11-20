@@ -1,11 +1,11 @@
 {
   "name": "uroboros",
   "displayName": "Uroboros",
-  "version": "0.32.0",
-  "description": "Zero-inference loop engineering for GitHub Spec Kit. /uroboros:run drives the pipeline from one idea to working code: an independent reviewer questions every phase, each undecided point becomes a question to you, an implementer writes the code on the model and effort you choose, and a verifier uses the built product. --goal swaps the pipeline for a completion condition; /uroboros:compat audits a project's spec-kit.",
+  "version": "1.0.0",
+  "description": "Zero-inference loop engineering for Claude Code. /uroboros:run takes one idea to working code: every undecided point becomes a question to you, an independent reviewer audits each artifact, an implementer writes the code on the model and effort you choose, and a verifier uses the built product. The size of the idea — small, medium or large — sets how much of the loop runs.",
   "engines": { "claude-code": ">=2.1.292" },
   "author": { "name": "NicolasET", "url": "https://github.com/nicolaset" },
   "repository": "https://github.com/nicolaset/uroboros",
   "license": "MIT",
-  "keywords": ["spec-kit", "sdd", "loop-engineering", "orchestrator", "reviewer", "zero-inference", "maker-checker"]
+  "keywords": ["loop-engineering", "orchestrator", "reviewer", "verifier", "zero-inference", "maker-checker"]
 }

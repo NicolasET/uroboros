@@ -1,3 +1,2 @@
-# Prompt files, JSON and the spec-kit skill snapshot must be byte-identical on every platform:
-# hashes.json in references/spec-kit-snapshot/ is computed over LF content.
+# Prompt files and JSON must be byte-identical on every platform.
 * text=auto eol=lf

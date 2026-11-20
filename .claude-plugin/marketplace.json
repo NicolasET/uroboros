@@ -1,12 +1,12 @@
 {
   "name": "uroboros",
-  "description": "Official marketplace for Uroboros — zero-inference loop engineering for GitHub Spec Kit.",
+  "description": "Official marketplace for Uroboros — zero-inference loop engineering for Claude Code.",
   "owner": { "name": "NicolasET", "url": "https://github.com/nicolaset" },
   "plugins": [
     {
       "name": "uroboros",
       "source": "./",
-      "description": "Zero-inference loop engineering for GitHub Spec Kit: orchestrator + independent reviewer + runtime-chosen implementer, goal mode (--goal) and a spec-kit compatibility audit (/uroboros:compat)."
+      "description": "Zero-inference loop engineering for Claude Code: one idea to working code, sized small, medium or large, with an orchestrator, an independent reviewer, a runtime-chosen implementer and a verifier that uses the product."
     }
   ]
 }
